@@ -1,0 +1,8 @@
+
+Warning: OutputXML::appendArgument(): unterminated entity reference         counter in /Users/marekziska/Desktop/IPP/projekt/tester/parser.php on line 80
+<?xml version="1.0" encoding="UTF-8"?>
+<program language="IPPcode20">
+  <instruction order="1" opcode="DEFVAR">
+    <arg1 type="var"/>
+  </instruction>
+</program>
