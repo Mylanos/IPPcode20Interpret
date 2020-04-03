@@ -12,9 +12,9 @@ class Arguments:
         self.inputFile = None
         self.passedArgs = [""]
         try:
-            self.check_arg_count()
-            self.parse_args()
-            self.check_errors()
+            self.__check_arg_count()
+            self.__parse_args()
+            self.__check_errors()
         except ArgError as ArgE:
             print("Error: " + ArgE.get_msg(), file=sys.stderr)
             sys.exit(ArgE.err_code())
@@ -22,7 +22,7 @@ class Arguments:
             print("Error: Internal program error!")
             sys.exit(99)
 
-    def parse_args(self):
+    def __parse_args(self):
         for argument in self.args:
             source_arg = re.match("^(--source=(([A-Z]|[a-z]|/|_|[0-9]|.)+))$", argument)
             input_arg = re.match("^(--input=(([A-Z]|[a-z]|/|_|[0-9]|.)+))$", argument)
@@ -39,11 +39,11 @@ class Arguments:
             else:
                 raise ArgError("Unknown argument or format of the argument! (" + argument + ")")
 
-    def check_errors(self):
+    def __check_errors(self):
         if not("input" in self.passedArgs or "source" in self.passedArgs):
             raise ArgError("Program did not receive any of mandatory arguments! (--source=file, --input=file)")
 
-    def check_arg_count(self):
+    def __check_arg_count(self):
         if len(self.args) > 3 or len(self.args) == 0:
             raise ArgError("Unsupported amount of arguments! (" + str(len(self.args)) + ")")
 
