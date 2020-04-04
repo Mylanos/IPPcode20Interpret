@@ -22,4 +22,7 @@
     <arg1 type="var">GF@true</arg1>
     <arg2 type="string">true</arg2>
   </instruction>
+  <instruction order="8" opcode="WRITE">
+    <arg1 type="string">Ahoj medzera Ahoj</arg1>
+  </instruction>
 </program>

@@ -49,7 +49,7 @@ class Parser:
                 raise XMLformatError("Error 32: The order attribute in instruction(order" + str(self.instr_count) +
                                      ") was not found! ")
             if "opcode" in instruct.attrib:
-                instruction_name = instruct.attrib.get("opcode")
+                instruction_name = instruct.attrib.get("opcode").upper()
                 instruction = Instruction(instruction_name)
                 if not list(instruct):
                     instruction.check_inst_without_args()
@@ -62,6 +62,8 @@ class Parser:
                         if "type" in argument.attrib:
                             arg_type = argument.attrib.get("type")
                             arg_content = argument.text
+                            if arg_content is None:
+                                arg_content = ""
                             instruction.arg_append(arg_type, arg_content, arg_count)
                         else:
                             raise XMLformatError("Error 32: The argument(" + str(arg_count) + ") attribute in instruction"

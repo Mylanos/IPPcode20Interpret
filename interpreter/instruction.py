@@ -11,13 +11,15 @@ class Instruction:
 
     def check_inst_without_args(self):
         if self.name not in ["POPFRAME", "RETURN", "PUSHFRAME", "CREATEFRAME", "BREAK"]:
-            raise XMLformatError("Error 32: Unknown instruction!"
+            raise XMLformatError("Error 32: Unknown instruction or valid instruction without needed arguments!"
                                  " Got (" + self.name + ")")
 
     def arg_append(self, arg_type, arg_content, arg_count):
         self.arg_count = arg_count
         self.__check_corresponding_args(arg_type)
         self.__check_arg_type(arg_type, arg_content)
+        if arg_content.isdigit() and arg_type == "int":
+            arg_content = int(arg_content)
         self.arg_contents.append(arg_content)
         self.arg_types.append(arg_type)
 
@@ -74,10 +76,10 @@ class Instruction:
             if re.match('^(([a-z]|[A-Z]|[0-9]|_|-|\$|&|%|\*|!|\?)+)$', arg_content):
                 return
         elif arg_type == "string":
-            if re.match('^((\\\[0-9]{3}|[^#\\\])*)$', arg_content):
+            if re.match('^((\\\[0-9]{3}|[^#\\\ \s])*)$', arg_content):
                 return
         elif arg_type == "int":
-            if re.match('^([0-9]|-|\+)*$', arg_content):
+            if re.match('^([0-9]|-|\+)+$', arg_content):
                 return
         elif arg_type == "bool":
             if re.match('^(true|false)$', arg_content):

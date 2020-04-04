@@ -14,6 +14,13 @@ class Error(Exception):
         return self.message
 
 
+class InternalError(Error):
+    """chybějící parametr skriptu (je-li třeba) nebo použití zakázané kombinace parametrů"""
+    def __init__(self, message):
+        self.code = 99
+        self.message = message
+
+
 class ArgError(Error):
     """chybějící parametr skriptu (je-li třeba) nebo použití zakázané kombinace parametrů"""
     def __init__(self, message):
@@ -55,8 +62,36 @@ class WrongOperandsError(Error):
         self.message = message
 
 
-class NonexistantVariableAccessError(Error):
+class AccesingAbsentVariableError(Error):
     """běhová chyba interpretace – přístup k neexistující proměnné (rámec existuje);"""
     def __init__(self, message):
         self.code = 54
+        self.message = message
+
+
+class FrameDoesntExistError(Error):
+    """ rámec neexistuje (např. čtení z prázdného zásobníku rámců)"""
+    def __init__(self, message):
+        self.code = 55
+        self.message = message
+
+
+class MissingValueError(Error):
+    """chybějící hodnota (v proměnné, na datovém zásobníku, nebo v zásobníku volání)"""
+    def __init__(self, message):
+        self.code = 56
+        self.message = message
+
+
+class OperandsValueError(Error):
+    """špatná hodnota operandu (např. dělení nulou, špatná návra- tová hodnota instrukce EXIT)"""
+    def __init__(self, message):
+        self.code = 57
+        self.message = message
+
+
+class StringOperationError(Error):
+    """špatná hodnota operandu (např. dělení nulou, špatná návra- tová hodnota instrukce EXIT)"""
+    def __init__(self, message):
+        self.code = 58
         self.message = message
