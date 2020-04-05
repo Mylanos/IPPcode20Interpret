@@ -67,6 +67,8 @@ class Interpret:
             self.__exit(instruct)
         elif instruct.name == "MOVE":
             self.__move(instruct)
+        elif instruct.name in ["ADD", "MUL", "IDIV", "SUB"]:
+            self.__basic_int_operations(instruct)
 
     def defvar(self, instruct):
         var_parts = instruct.arg_contents[0].split('@')
@@ -86,7 +88,7 @@ class Interpret:
 
     def __write(self, instruct):
         if instruct.arg_types[0] == "var":
-            arg_value = self.__get_variable_value(instruct.arg_contents[0])
+            arg_value = self.__get_value_var(instruct.arg_contents[0])
             if arg_value is None:
                 raise MissingValueError("Error 56: Trying to output uninitialized variable!")
             else:
@@ -100,7 +102,7 @@ class Interpret:
         var_parts = arg_content.split('@')
         return var_parts[0], var_parts[1]
 
-    def __get_variable_value(self, arg_content):
+    def __get_value_var(self, arg_content):
         frame, name = self.__split_argument_content(arg_content)
         if frame == "GF":
             return self.global_frame.get_value(name)
@@ -114,7 +116,7 @@ class Interpret:
     def __exit(self, instruct):
         # treba tiež čekovať podla toho do akeho framu pristupovat
         if instruct.arg_types[0] == "var":
-            instr_value = self.__get_variable_value(instruct.arg_contents[0])
+            instr_value = self.__get_value_var(instruct.arg_contents[0])
             if instr_value is None:
                 raise MissingValueError("Error 56: Trying to access uninitialized variable!")
             elif isinstance(instr_value, int):
@@ -134,7 +136,8 @@ class Interpret:
                 raise OperandsValueError("Error 57: Value out of range! Exit function expects int in range 0..49"
                                    " got (\"" + str(exit_code) + "\")")
         else:
-            raise OperandsValueError("Error 57: Exit function expects int! got (\"" + instruct.arg_types[0] + "\")")
+            raise OperandsValueError("Error 57: Wrong value of EXIT's operand! expects (\"int|var\") got (\"" +
+                                     instruct.arg_types[0] + "\")")
 
     def __store_value(self, frame, name, arg_value):
         if frame == "GF":
@@ -149,16 +152,41 @@ class Interpret:
         else:
             raise InternalError("Error 99: Internal error, unknown frame (\"" + frame + "\")")
 
-    def __move(self, instruct):
-        frame, name = self.__split_argument_content(instruct.arg_contents[0])
-        var_type = instruct.arg_types[1]
+    def __get_value_symb(self, instruct, index):
+        var_type = instruct.arg_types[index]
         if var_type in ["string", "int", "bool", "nil"]:
-            arg_value = instruct.arg_contents[1]
+            return instruct.arg_contents[index]
         elif var_type == "var":
-            arg_value = self.__get_variable_value(instruct.arg_contents[1])
+            return self.__get_value_var(instruct.arg_contents[index])
         else:
             raise InternalError("Error 99: Internal error, unknown type (\"" + var_type + "\")")
+
+    def __move(self, instruct):
+        frame, name = self.__split_argument_content(instruct.arg_contents[0])
+        arg_value = self.__get_value_symb(instruct, 1)
         self.__store_value(frame, name, arg_value)
+
+    def __basic_int_operations(self, instruct):
+        frame, name = self.__split_argument_content(instruct.arg_contents[0])
+        arg_value1 = self.__get_value_symb(instruct, 1)
+        arg_value2 = self.__get_value_symb(instruct, 2)
+        if isinstance(arg_value1, int) and isinstance(arg_value2, int):
+            result = 0
+            if instruct.name == "IDIV":
+                if arg_value2 == 0:
+                    raise OperandsValueError("Error 57: DIV instruction tried to divide by zero!")
+                result = arg_value1 / arg_value2
+            elif instruct.name == "MUL":
+                result = arg_value1 * arg_value2
+            elif instruct.name == "ADD":
+                result = arg_value1 + arg_value2
+            elif instruct.name == "SUB":
+                result = arg_value1 - arg_value2
+            self.__store_value(frame, name, int(result))
+        else:
+            raise OperandsValueError("Error 57: DIV instruction expects int! got (\"" +
+                                     str(type(arg_value1).__name__) + " / " + str(type(arg_value2).__name__) + "\")")
+
 
 interpret = Interpret()
 interpret.start()
