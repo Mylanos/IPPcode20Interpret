@@ -206,7 +206,7 @@ for SCRIPT in "${REQUIRED_SCRIPTS[@]}" "${NON_REQUIRED_SCRIPTS[@]}"; do
       php $SCRIPT --help >> $LOG 2>&1
       RETCODE=$?
 	  elif [[ "$EXT" = "py" ]]; then
-      python3.8 $SCRIPT --help >> $LOG 2>&1
+      python3 $SCRIPT --help >> $LOG 2>&1
       RETCODE=$?		 
 	  else
       echo_color red "INTERNAL ERROR: Unknown script extension."

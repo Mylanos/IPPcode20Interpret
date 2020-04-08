@@ -1,7 +1,10 @@
 Archive:  xziska03.zip
-  inflating: parse.php               
-  inflating: readme1.md              
-Skript typu filtr (parse.php v jazyce PHP 7.4) načte ze standardního vstupu zdrojový kód v IPP-code20, zkontroluje lexikální a syntaktickou správnost kódu a vypíše na standardní výstup XML reprezentaci programu.
-
-Podporovane argumenty:
-          --help slouží k výpisu nápovědy
+  inflating: readme2.md              
+  inflating: argument.py             
+  inflating: instruction.py          
+  inflating: interpret.py            
+  inflating: myerrors.py             
+  inflating: parser.py               
+  inflating: test.php                
+napoveda
+napoveda

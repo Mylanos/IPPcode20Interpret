@@ -1,22 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title> ITW - tvorba webových stránok</title>
-        <link rel="stylesheet" type="text/css" href="style.css">
-    </head>
-    
-    <body>
-        <section class="container">
-        <h2>TESTY K INTERPRETU Z PREDMETU IPP</h2>
-        <div>
-                <table class="table" >
-                    <tr><td>file name</td><td>.src status</td><td>.in status</td><td>.out status</td></tr>
-                    <tr><td>file1.src</td><td>OK</td><td>OK</td><td>OK</td></tr>
-                    <tr><td>file2.txt</td><td>OK</td><td>BAD</td><td>OK</td></tr>
-                </table>
-        </div>
-        </section>
-        
-    </body>
+<head>
+<meta charset="utf-8"/>
+<title> IPP - principy programovacich jazykov</title>
+</head>
+<body style="text-align: center">
+<section class="container">
+<h2>TESTY K INTERPRETU Z PREDMETU IPP</h2>
+<div>
+<table style="align: center; margin: auto;">
+<tr style="background-color: dodgerblue;"><td style="width: 80px">order</td><td style="width: 250px;">filename</td><td style="width: 300px">.rc status</td><td style="width: 300px">rc - received vs expected</td><td style="width:300px">.out status</td><td style="width:120px">RESULT</td></tr>
+<tr><td style="background-color: cornflowerblue">1</td></td><td style="background-color:darkgrey;">../tests/interpret-only/31/fucked_up_xml.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (31)----------(31)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">2</td></td><td style="background-color:darkgrey;">../tests/interpret-only/32/bad_argument_tag.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">3</td></td><td style="background-color:darkgrey;">../tests/interpret-only/32/bad_root_element.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">4</td></td><td style="background-color:darkgrey;">../tests/interpret-only/32/duplicit_order.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">5</td></td><td style="background-color:darkgrey;">../tests/interpret-only/32/missing_argument.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">6</td></td><td style="background-color:darkgrey;">../tests/interpret-only/32/missing_opcode.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">7</td></td><td style="background-color:darkgrey;">../tests/interpret-only/32/missing_order.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">8</td></td><td style="background-color:darkgrey;">../tests/interpret-only/32/negative_order.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">9</td></td><td style="background-color:darkgrey;">../tests/interpret-only/32/string_order.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">10</td></td><td style="background-color:darkgrey;">../tests/interpret-only/32/unknown_element.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">11</td></td><td style="background-color:darkgrey;">../tests/interpret-only/32/unknown_element2.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">12</td></td><td style="background-color:darkgrey;">../tests/interpret-only/32/write_test.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">13</td></td><td style="background-color:darkgrey;">../tests/interpret-only/arithmetic/correct.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">14</td></td><td style="background-color:darkgrey;">../tests/interpret-only/arithmetic/incorrectInt.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">15</td></td><td style="background-color:darkgrey;">../tests/interpret-only/arithmetic/negativeNum.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">16</td></td><td style="background-color:darkgrey;">../tests/interpret-only/arithmetic/nil.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (53)----------(53)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">17</td></td><td style="background-color:darkgrey;">../tests/interpret-only/arithmetic/stringAdd.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (53)----------(53)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">18</td></td><td style="background-color:darkgrey;">../tests/interpret-only/arithmetic/zeroDiv.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (57)----------(57)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">19</td></td><td style="background-color:darkgrey;">../tests/interpret-only/frames/TFafterPush.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (55)----------(55)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">20</td></td><td style="background-color:darkgrey;">../tests/interpret-only/frames/defvarnoTF.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (55)----------(55)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">21</td></td><td style="background-color:darkgrey;">../tests/interpret-only/frames/popEmpty.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (55)----------(55)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">22</td></td><td style="background-color:darkgrey;">../tests/interpret-only/frames/pushEmpty.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (55)----------(55)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">23</td></td><td style="background-color:darkgrey;">../tests/interpret-only/frames/secondLF.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">24</td></td><td style="background-color:darkgrey;">../tests/interpret-only/jumps/duplicateLabel.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (52)----------(52)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">25</td></td><td style="background-color:darkgrey;">../tests/interpret-only/jumps/jumpifeq.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">26</td></td><td style="background-color:darkgrey;">../tests/interpret-only/jumps/nonexistLabel.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (52)----------(52)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">27</td></td><td style="background-color:darkgrey;">../tests/interpret-only/valid/all_program_attributes.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">28</td></td><td style="background-color:darkgrey;">../tests/interpret-only/valid/defvar_move.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">29</td></td><td style="background-color:darkgrey;">../tests/interpret-only/valid/dprint.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">30</td></td><td style="background-color:darkgrey;">../tests/interpret-only/valid/exit.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (42)----------(42)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">31</td></td><td style="background-color:darkgrey;">../tests/interpret-only/valid/label_call_return.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">32</td></td><td style="background-color:darkgrey;">../tests/interpret-only/valid/order/discontinuously_ordered_instructions.src</td><td style="background-color: red;">BAD</td><td style="background-color: red;"> got-(32)  expected-(0)</td><td style="background-color: orange;">BAD RC</td>
+<td style="background-color: red;">FAIL</td></tr>
+<tr><td style="background-color: cornflowerblue">33</td></td><td style="background-color:darkgrey;">../tests/interpret-only/valid/order/unordered_instructions.src</td><td style="background-color: red;">BAD</td><td style="background-color: red;"> got-(32)  expected-(0)</td><td style="background-color: orange;">BAD RC</td>
+<td style="background-color: red;">FAIL</td></tr>
+<tr><td style="background-color: cornflowerblue">34</td></td><td style="background-color:darkgrey;">../tests/interpret-only/valid/read.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">35</td></td><td style="background-color:darkgrey;">../tests/interpret-only/valid/stack_test.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">36</td></td><td style="background-color:darkgrey;">../tests/interpret-only/valid/type.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">37</td></td><td style="background-color:darkgrey;">../tests/interpret-only/valid/write.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">38</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/arg_order1.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">39</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/arg_quantity1.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">40</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/arg_quantity2.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">41</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/arg_quantity3.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">42</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/duplicate_order.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">43</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/instruction_order1.src</td><td style="background-color: red;">BAD</td><td style="background-color: red;"> got-(32)  expected-(0)</td><td style="background-color: orange;">BAD RC</td>
+<td style="background-color: red;">FAIL</td></tr>
+<tr><td style="background-color: cornflowerblue">44</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/negative_order.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">45</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/space_order.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (0)----------(0)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">46</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/wrong_language.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">47</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/wrong_opcode.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">48</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/wrong_tag1.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">49</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/wrong_tag2.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">50</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/xml_format1.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (31)----------(31)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">51</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/xml_fromat2.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (31)----------(31)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+<tr><td style="background-color: cornflowerblue">52</td></td><td style="background-color:darkgrey;">../tests/interpret-only/xml_structure/zero_order.src</td><td style="background-color: green;">OK</td><td style="background-color: green;"> (32)----------(32)</td><td style="background-color: green;">OK</td>
+<td style="background-color: green;">PASS</td></tr>
+</table> 
+</div>
+</section>
+</body>
 </html>
