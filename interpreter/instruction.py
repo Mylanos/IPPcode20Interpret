@@ -18,8 +18,9 @@ class Instruction:
     def check_argument_count(self, count):
         if self.name in ["DEFVAR", "POPS", "PUSHS", "WRITE", "EXIT", "DPRINT", "CALL", "LABEL", "JUMP",
                          "JUMPIFEQS", "JUMPIFNEQS"] and count == 1 \
-            or self.name in ["MOVE", "INT2CHAR", "STRLEN", "TYPE", "NOT", "READ"] and count == 2 \
-            or self.name in ["ADD", "SUB", "MUL", "IDIV", "LT", "GT", "EQ", "AND", "OR", "STRI2INT",
+            or self.name in ["MOVE", "INT2CHAR", "STRLEN", "TYPE", "NOT", "READ", "INT2FLOAT",
+                             "FLOAT2INT"] and count == 2 \
+            or self.name in ["ADD", "SUB", "MUL", "IDIV", "DIV", "LT", "GT", "EQ", "AND", "OR", "STRI2INT",
                              "CONCAT", "GETCHAR", "SETCHAR", "JUMPIFEQ", "JUMPIFNEQ"] and count == 3:
             return
         else:
@@ -40,16 +41,16 @@ class Instruction:
                 return
         # instruction expects symb
         elif self.name in ["PUSHS", "WRITE", "EXIT", "DPRINT"]:
-            if arg_type in ["string", "bool", "int", "nil", "var"]:
+            if arg_type in ["string", "bool", "int", "nil", "var", "float"]:
                 return
         # instruction expects label
         elif self.name in ["CALL", "LABEL", "JUMP", "JUMPIFEQS", "JUMPIFNEQS"]:
             if arg_type == "label":
                 return
         # instruction expects var,symb
-        elif self.name in ["MOVE", "INT2CHAR", "STRLEN", "TYPE", "NOT"]:
+        elif self.name in ["MOVE", "INT2CHAR", "STRLEN", "TYPE", "NOT", "INT2FLOAT", "FLOAT2INT"]:
             if arg_type == "var" and self.arg_count == 1 or\
-               arg_type in ["string", "bool", "int", "nil", "var"] and self.arg_count == 2:
+               arg_type in ["string", "bool", "int", "nil", "var", "float"] and self.arg_count == 2:
                 return
         # instruction expects var, type
         elif self.name == "READ":
@@ -57,17 +58,17 @@ class Instruction:
                arg_type == "type" and self.arg_count == 2:
                 return
         # instruction expects var,symb, symb
-        elif self.name in ["ADD", "SUB", "MUL", "IDIV", "LT", "GT", "EQ", "AND", "OR", "STRI2INT",
+        elif self.name in ["ADD", "SUB", "MUL", "DIV", "IDIV", "LT", "GT", "EQ", "AND", "OR", "STRI2INT",
                            "CONCAT", "GETCHAR", "SETCHAR"]:
             if arg_type == "var" and self.arg_count == 1 or\
-               arg_type in ["string", "bool", "int", "nil", "var"] and self.arg_count == 2 or \
-               arg_type in ["string", "bool", "int", "nil", "var"] and self.arg_count == 3:
+               arg_type in ["string", "bool", "int", "nil", "var", "float"] and self.arg_count == 2 or \
+               arg_type in ["string", "bool", "int", "nil", "var", "float"] and self.arg_count == 3:
                 return
         # instruction expects label, symb, symb
         elif self.name in ["JUMPIFEQ", "JUMPIFNEQ"]:
             if arg_type == "label" and self.arg_count == 1 or\
-               arg_type in ["string", "bool", "int", "nil", "var"] and self.arg_count == 2 or \
-               arg_type in ["string", "bool", "int", "nil", "var"] and self.arg_count == 3:
+               arg_type in ["string", "bool", "int", "nil", "var", "float"] and self.arg_count == 2 or \
+               arg_type in ["string", "bool", "int", "nil", "var", "float"] and self.arg_count == 3:
                 return
         # unknown instruction
         else:
@@ -77,7 +78,7 @@ class Instruction:
 
     def __check_arg_type(self, arg_type, arg_content):
         if arg_type == "type":
-            if re.match('^(int|string|bool)$', arg_content):
+            if re.match('^(int|string|bool|float)$', arg_content):
                 return arg_content
         elif arg_type == "var":
             if re.match('^((LF|GF|TF)@([a-z]|[A-Z]|[0-9]|_|-|\$|&|%|\*|!|\?)+)$', arg_content):
@@ -92,6 +93,11 @@ class Instruction:
         elif arg_type == "int":
             if re.match('^([0-9]|-|\+)+$', arg_content):
                 return int(arg_content)
+        elif arg_type == "float":
+            if re.match('^(|-|\+)?([0-9])*\.?([0-9])*$', arg_content):
+                return float(arg_content)
+            elif re.match('^(\+|-)?(0x)?([0-9]|a|b|c|d|e|f)+\.?([0-9]|a|b|c|d|e|f)*(p\+||p-|p)?([0-9])*$', arg_content):
+                return float.fromhex(arg_content)
         elif arg_type == "bool":
             if re.match('^(true|false)$', arg_content):
                 if arg_content == "true":

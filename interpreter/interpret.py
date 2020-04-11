@@ -15,6 +15,7 @@ from frame import Frame
 from myerrors import *
 from parser import Parser as Parser
 from stats import Stats
+import re
 
 
 class Interpret:
@@ -84,10 +85,10 @@ class Interpret:
         """ count vars in all frames
         """
         for frame in self.local_frame:
-            self.statistics.update_vars_count(frame.initialized_stats_count)
-        self.statistics.update_vars_count(self.global_frame.initialized_stats_count)
+            self.statistics.check_vars_count(frame.variables)
+        self.statistics.check_vars_count(self.global_frame.variables)
         if self.temporary_frame:
-            self.statistics.update_vars_count(self.temporary_frame.initialized_stats_count)
+            self.statistics.check_vars_count(self.temporary_frame.variables)
 
     def search_and_store_labels(self, instr_list):
         """ Finds all labels, checks for uniqueness of label and saves index
@@ -112,7 +113,7 @@ class Interpret:
         elif instruct.name == "POPFRAME":
             if not self.local_frame:
                 raise FrameDoesntExistError("Error 55: Trying to pop undefined frame!")
-            self.statistics.update_vars_count(self.local_frame[-1].initialized_stats_count)
+            self.statistics.check_vars_count(self.local_frame[-1].variables)
             self.temporary_frame = self.local_frame.pop(-1)
         elif instruct.name == "PUSHFRAME":
             if not self.temporary_frame:
@@ -127,7 +128,7 @@ class Interpret:
             self.__exit(instruct)
         elif instruct.name == "MOVE":
             self.__move(instruct)
-        elif instruct.name in ["ADD", "MUL", "IDIV", "SUB", "AND", "OR", "LT", "GT", "EQ"]:
+        elif instruct.name in ["DIV", "ADD", "MUL", "IDIV", "SUB", "AND", "OR", "LT", "GT", "EQ"]:
             self.__basic_operations(instruct, False)
         elif instruct.name in ["ADDS", "MULS", "IDIVS", "SUBS", "ANDS", "ORS", "LTS", "GTS", "EQS"]:
             self.__basic_operations(instruct, True)
@@ -137,7 +138,7 @@ class Interpret:
             self.__not(instruct, False)
         elif instruct.name == "NOTS":
             self.__not(instruct, True)
-        elif instruct.name in ["INT2CHAR", "STRLEN", "STRI2INT", "CONCAT", "GETCHAR", "SETCHAR"]:
+        elif instruct.name in ["INT2FLOAT", "FLOAT2INT", "INT2CHAR", "STRLEN", "STRI2INT", "CONCAT", "GETCHAR", "SETCHAR"]:
             self.__string_operations(instruct, False)
         elif instruct.name in ["INT2CHARS", "STRI2INTS"]:
             self.__string_operations(instruct, True)
@@ -193,6 +194,8 @@ class Interpret:
             else:
                 if arg_type == "bool":
                     print(str(arg_value).lower(), end="")
+                elif arg_type == "float":
+                    print(float.hex(arg_value), end="")
                 elif arg_type == "nil":
                     print("", end="")
                 else:
@@ -201,6 +204,8 @@ class Interpret:
             constant = instruct.arg_contents[0]
             if constant == "nil" and instruct.arg_types[0]:
                 print("", end="")
+            elif instruct.arg_types[0] == "float":
+                print(float.hex(constant), end="")
             elif instruct.arg_types[0] == "bool":
                 print(str(constant).lower(), end="")
             else:
@@ -261,6 +266,7 @@ class Interpret:
                 raise MissingValueError("Error 56: Trying to access uninitialized variable!")
             elif arg_type == "int":
                 if 50 > arg_value >= 0:
+                    self.statistics.update_instr_count()
                     self.__exit_interpret(arg_value)
                 else:
                     raise OperandsValueError("Error 57: Value out of range! Exit function expects int in range 0..49!")
@@ -269,6 +275,7 @@ class Interpret:
         elif instruct.arg_types[0] == "int":
             exit_code = instruct.arg_contents[0]
             if 50 > exit_code >= 0:
+                self.statistics.update_instr_count()
                 self.__exit_interpret(exit_code)
             else:
                 raise OperandsValueError("Error 57: Value out of range! Exit function expects int in range 0..49!")
@@ -311,7 +318,7 @@ class Interpret:
                 raise MissingValueError("Error 56: Instruction POP was called on empty stack!")
         else:
             var_type = instruct.arg_types[index]
-            if var_type in ["string", "int", "bool", "nil"]:
+            if var_type in ["string", "int", "bool", "nil", "float"]:
                 return instruct.arg_types[index], instruct.arg_contents[index]
             elif var_type == "var":
                 return self.__get_value_var(instruct.arg_contents[index])
@@ -362,6 +369,7 @@ class Interpret:
 
         if (arg_type1 == "bool" and arg_type2 == "bool") or \
                 (arg_type1 == "int" and arg_type2 == "int") or \
+                (arg_type1 == "float" and arg_type2 == "float") or \
                 (arg_type1 == "string" and arg_type2 == "string"):
             if instruct.name in ["AND", "ANDS"]:
                 result = arg_value1 and arg_value2
@@ -374,18 +382,18 @@ class Interpret:
             elif instruct.name in ["EQ", "EQS"]:
                 result = arg_value1 == arg_value2
             else:
-                if arg_type1 != "int":
+                if arg_type1 != "int" and arg_type1 != "float":
                     raise WrongOperandsError("Error 53: Passed arguments are not compatible with instruction!" +
                                              "(\"" + instruct.name + "\")")
             if result is not None:
                 self.__store_value(frame, name, result, "bool", stack),
                 return
-        if arg_type1 == "int" and arg_type2 == "int":
-            if instruct.name in ["IDIV", "IDIVS"]:
+        if arg_type1 == "int" and arg_type2 == "int" or \
+                arg_type1 == "float" and arg_type2 == "float":
+            if instruct.name == "DIV":
                 if arg_value2 == 0:
                     raise OperandsValueError("Error 57: DIV instruction tried to divide by zero!")
                 result = arg_value1 / arg_value2
-                result = int(result)
             elif instruct.name in ["MUL", "MULS"]:
                 result = arg_value1 * arg_value2
             elif instruct.name in ["ADD", "ADDS"]:
@@ -395,6 +403,13 @@ class Interpret:
             else:
                 raise WrongOperandsError("Error 53: Passed arguments are not compatible with instruction! " +
                                          "(\"" + instruct.name + "\")")
+            self.__store_value(frame, name, result, arg_type1, stack)
+        elif arg_type1 == "int" and arg_type2 == "int":
+            if instruct.name in ["IDIV", "IDIVS"]:
+                if arg_value2 == 0:
+                    raise OperandsValueError("Error 57: DIV instruction tried to divide by zero!")
+                result = arg_value1 / arg_value2
+                result = int(result)
             self.__store_value(frame, name, result, arg_type1, stack)
         elif arg_type2 == "nil" or arg_type1 == "nil":
             if instruct.name in ["EQ", "EQS"]:
@@ -414,7 +429,7 @@ class Interpret:
         """
         frame, name = self.__split_argument_content(instruct.arg_contents[0])
         arg_type, arg_value = self.__get_value_symb(instruct, 1, False)
-        if arg_type in ["nil", "string", "bool", "int"]:
+        if arg_type in ["nil", "string", "bool", "int", "float"]:
             self.__store_value(frame, name, arg_type, "string", False)
         elif arg_type is None:
             self.__store_value(frame, name, "nil", "nil", False)
@@ -433,6 +448,8 @@ class Interpret:
         name = None
         arg_type2 = None
         arg_type1 = None
+        arg_value1 = None
+        arg_value2 = None
         if stack:
             arg_type2, arg_value2 = self.__get_value_symb(instruct, 2, stack)
         else:
@@ -451,6 +468,16 @@ class Interpret:
         elif instruct.name == "STRLEN":
             if arg_type1 == "string":
                 self.__store_value(frame, name, len(arg_value1), "int", False)
+            else:
+                raise WrongOperandsError("Error 53: Instruction STRLEN received wrong operand type, expecting string!")
+        elif instruct.name == "INT2FLOAT":
+            if arg_type1 == "int":
+                self.__store_value(frame, name, float(arg_value1), "float", False)
+            else:
+                raise WrongOperandsError("Error 53: Instruction STRLEN received wrong operand type, expecting string!")
+        elif instruct.name == "FLOAT2INT":
+            if arg_type1 == "float":
+                self.__store_value(frame, name, int(arg_value1), "int", False)
             else:
                 raise WrongOperandsError("Error 53: Instruction STRLEN received wrong operand type, expecting string!")
         else:
@@ -514,6 +541,7 @@ class Interpret:
                     jump_to_index = self.label_dict.get(instruct.arg_contents[0])
                     self.call_index_stack.append(self.instr_index)
                     self.instr_index = jump_to_index
+                self.statistics.update_instr_count()
             else:
                 raise SemanticError("Error 52: Instruction JUMP/CALL received undefined label!")
 
@@ -566,9 +594,11 @@ class Interpret:
             if instruct.name in ["JUMPIFEQ", "JUMPIFEQS"]:
                 if arg_value1 == arg_value2:
                     self.instr_index = jump_to_index
+                    self.statistics.update_instr_count()
             elif instruct.name in ["JUMPIFNEQ", "JUMPIFNEQS"]:
                 if arg_value1 != arg_value2:
                     self.instr_index = jump_to_index
+                    self.statistics.update_instr_count()
         else:
             raise WrongOperandsError(
                 "Error 53: Instruction JUMPIFEQ/JUMPIFNEQ received wrong operands type! " + str(self.instr_index))
@@ -602,6 +632,11 @@ class Interpret:
 
         if self.__is_int(user_input) and _type == "int":
             self.__store_value(frame, name, int(user_input), _type, False)
+        elif re.match("^(|-|\+)?([0-9])+\.?([0-9])*$", user_input) and _type == "float":
+            self.__store_value(frame, name, float(user_input), _type, False)
+        elif re.match("^(\+|-)?(0x)?([0-9]|a|b|c|d|e|f)+\.?([0-9]|a|b|c|d|e|f)*(p\+||p-|p)?([0-9])*$", user_input) \
+                and _type == "float":
+            self.__store_value(frame, name, float.fromhex(user_input), _type, False)
         elif isinstance(user_input, str) and _type == "string":
             self.__store_value(frame, name, user_input, _type, False)
         elif user_input.lower() == "true" and _type == "bool":

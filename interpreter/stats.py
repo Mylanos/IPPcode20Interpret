@@ -13,6 +13,7 @@ class Stats:
         self.stats_file = args.statsFile
         self.stat_insts = False
         self.stat_vars = False
+        self.max_vars_count = 0
         self.instr_count = 0
         self.vars_count = 0
         self.first_stat_arg = args.first_stat_arg
@@ -28,12 +29,13 @@ class Stats:
         """
         self.instr_count += 1
 
-    def update_vars_count(self, count):
+    def check_vars_count(self, dict):
         """ counts instructions
         Args:
             count: Ammount of variables to be added to statistics
         """
-        self.vars_count += count
+        if len(dict) > self.max_vars_count:
+            self.max_vars_count = len(dict)
 
     def print_statistics(self):
         """ Prints statistics to desired file
@@ -42,12 +44,12 @@ class Stats:
             with open(self.stats_file, "w") as f:
                 if self.stat_insts and self.stat_vars:
                     if self.first_stat_arg == "insts":
-                        f.write(str(self.instr_count) + "\n" + str(self.vars_count))
+                        f.write(str(self.instr_count) + "\n" + str(self.max_vars_count))
                     else:
-                        f.write(str(self.vars_count) + "\n" + str(self.instr_count))
+                        f.write(str(self.max_vars_count) + "\n" + str(self.instr_count))
                 elif self.stat_insts:
                     f.write(str(self.instr_count))
                 elif self.stat_vars:
-                    f.write(str(self.vars_count))
+                    f.write(str(self.max_vars_count))
                 else:
                     pass

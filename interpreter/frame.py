@@ -9,7 +9,6 @@ class Frame:
     def __init__(self):
         self.variables = {}
         self.types = {}
-        self.initialized_stats_count = 0
 
     def define_variable(self, name):
         """ Defines variable
@@ -32,7 +31,6 @@ class Frame:
             raise AccesingAbsentVariableError("Error 54: Trying to access undefined variable!")
         self.variables[name] = value
         self.types[name] = var_type
-        self.initialized_stats_count += 1
 
     def get_type_and_value(self, name, type_exception):
         """ Returns value and type of variable

@@ -6,6 +6,8 @@ TEST_PARSER_DIC=tests/parse-only/int
 TEST_INT_DIC=tests/interpret-only/arithmetic
 TEST_INT_BOTH=tests/both
 TEST_INT_STACK=tests/interpret-advanced/stack_tests
+TEST_INT_FLOAT=tests/interpret-advanced/float_tests
+TEST_KOULE=tests/hardcore-koule/JohnyK/koule_JohnyK.xml
 PARSER=parser/parser.php
 TESTER=tester/test.php
 INTERPRET=interpreter/interpret.py
@@ -13,6 +15,8 @@ PARSER_OUTPUT=test_output/testparser.html
 INT_OUTPUT=test_output/testint.html
 BOTH_OUTPUT=test_output/testboth.html
 STACK_OUTPUT=test_output/teststack.html
+FLOAT_OUTPUT=test_output/testfloat.html
+STATS_FILE=stats/test.st
 
 
 test_parser:
@@ -31,6 +35,12 @@ test_int_stack:
 	$(PHP) $(TESTER) --recursive --int-only --int-script=$(INTERPRET) --directory=$(TEST_INT_STACK) > $(STACK_OUTPUT) ;
 	open $(STACK_OUTPUT)
 
+test_int_float:
+	$(PHP) $(PARSER) --recursive --int-only --int-script=$(INTERPRET) --directory=$(TEST_INT_FLOAT) > $(FLOAT_OUTPUT) ;
+	open $(FLOAT_OUTPUT)
+
+test_koule:
+	$(PYTHON) $(INTERPRET) --source=$(TEST_KOULE) --stats=$(STATS_FILE) --insts --vars
 
 .PHONY: clean
 clean:
