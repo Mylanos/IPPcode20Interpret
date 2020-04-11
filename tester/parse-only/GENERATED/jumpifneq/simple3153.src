@@ -1,2 +1,0 @@
-.IPPcode20
-JUMPIFNEQ label string@a nil@nil

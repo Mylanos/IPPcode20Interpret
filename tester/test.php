@@ -109,103 +109,61 @@ function replace_suffix($src_file, $suffix){
     return $new_file;
 }
 
-function interpret_test($src_files, $file_int){
+function compare_script_outputs($src_files, $file_int, $file_parse, $arguments, $file_jexamxml, $file_options){
     $index = 1;
     $rc_correct = false;
+    $parse_ret_value = 1;
     foreach ($src_files as &$file){
-        echo "<tr><td style=\"background-color: cornflowerblue\">" . $index ."</td>";
-        echo "</td><td style=\"background-color:darkgrey;\">".$file."</td>";
+        echo "<tr><td style=\"background-color: cornflowerblue\">" . $index ."</td>".PHP_EOL.
+             "</td><td style=\"background-color:darkgrey;\">".$file."</td>";
         $out_file = replace_suffix($file, ".out");
         $in_file = replace_suffix($file, ".in");
         $rc_file = replace_suffix($file, ".rc");
         $tmp_file = replace_suffix($file, ".tmp");
+        $tmp_file2 = replace_suffix($file, ".tmp2");
         $diff_file = replace_suffix($file, ".diff");
-        $ret_value = intval(shell_exec("python3.7 ". $file_int ." --source=".$file." --input=". $in_file ." > ". $tmp_file ." 2>/dev/null; echo $?"));
-        $ref_ret_value = intval(shell_exec("cat ".$rc_file));
         if(!(is_file($in_file))){
             shell_exec("touch ". $in_file);
         }
-        else if(!(is_file($out_file))){
+        if(!(is_file($out_file))){
             shell_exec("touch ". $out_file);
         }
-        else if (!(is_file($rc_file))){
+        if (!(is_file($rc_file))){
             shell_exec("echo '0' > ". $rc_file);
         }
-        if($ret_value == 0){
-            if($ret_value == $ref_ret_value){
-                $rc_correct = true;
-                echo "<td style=\"background-color: green;\">OK</td>";
-                echo "<td style=\"background-color: green;\"> (". $ret_value . ")----------(". $ref_ret_value .")</td>";
-                $diff_output = intval(shell_exec("diff ". $out_file." ".$tmp_file." ; echo $?"));
-                if($diff_output == 0){
-                    echo"<td style=\"background-color: green;\">OK</td>" . PHP_EOL;
-                }
-                else{
-                    echo"<td style=\"background-color: red;\">BAD (". $diff_output .")</td>" . PHP_EOL;
-                }
-                if($diff_output == 0 and $rc_correct){
-                    echo"<td style=\"background-color: green;\">PASS</td></tr>" . PHP_EOL;
-                }
-                else{
-                    echo"<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
-                }
+        if(!(in_array(Arguments::IntOnly, $arguments)) && !(in_array(Arguments::ParseOnly, $arguments))){
+            $parse_ret_value = intval(shell_exec("php ". $file_parse ." < ".$file." > ". $tmp_file .
+                                                 " 2>/dev/null; echo $?"));
+
+            if($parse_ret_value == 0){
+                $ret_value = intval(shell_exec("python3 ". $file_int ." --source=".$tmp_file." --input=".$in_file." > ".
+                                       $tmp_file2 ." 2>/dev/null; echo $?"));
+                $diff_output = intval(shell_exec("diff ". $out_file." ".$tmp_file2." ; echo $?"));
             }
             else{
-                echo "<td style=\"background-color: red;\">BAD</td>";
-                echo "<td style=\"background-color: red;\"> got-(". $ret_value . ")  expected-(". $ref_ret_value .")</td>";
-                echo"<td style=\"background-color: orange;\">BAD RC</td>" . PHP_EOL;
-                echo"<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
+                $ret_value = $parse_ret_value;
+                //error parser
             }
+        }
+        else if(in_array(Arguments::IntOnly, $arguments)){
+            $ret_value = intval(shell_exec("python3 ". $file_int ." --source=".$file." --input=".$in_file." > ".
+                                       $tmp_file ." 2>/dev/null; echo $?"));
+            $diff_output = intval(shell_exec("diff ". $out_file." ".$tmp_file." ; echo $?"));
         }
         else{
-            if($ret_value == $ref_ret_value){
-                echo "<td style=\"background-color: green;\">OK</td>";
-                echo "<td style=\"background-color: green;\"> (". $ret_value . ")----------(". $ref_ret_value .")</td>";
-                echo"<td style=\"background-color: green;\">OK</td>" . PHP_EOL;
-                echo"<td style=\"background-color: green;\">PASS</td></tr>" . PHP_EOL;
-            }
-            else{
-                echo "<td style=\"background-color: red;\">BAD</td>";
-                echo "<td style=\"background-color: red;\"> got-(". $ret_value . ")  expected-(". $ref_ret_value .")</td>";
-                echo"<td style=\"background-color: orange;\">BAD RC</td>" . PHP_EOL;
-                echo"<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
-            }
-        }
-        shell_exec("rm ". $tmp_file);
-        $index = $index + 1;
-    }
-}
-
-function parser_test($src_files, $file_parse, $file_jexamxml, $file_options){
-    $index = 1;
-    $rc_correct = false;
-    foreach ($src_files as &$file){
-        echo "<tr><td style=\"background-color: cornflowerblue\">" . $index ."</td>";
-        echo "</td><td style=\"background-color:darkgrey;\">".$file."</td>";
-        $out_file = replace_suffix($file, ".out");
-        $in_file = replace_suffix($file, ".in");
-        $rc_file = replace_suffix($file, ".rc");
-        $tmp_file = replace_suffix($file, ".tmp");
-        $diff_file = replace_suffix($file, ".diff");
-        $ret_value = intval(shell_exec("php ". $file_parse ." <".$file." >". $tmp_file ." 2>/dev/null; echo $?"));
-        $ref_ret_value = intval(shell_exec("cat ".$rc_file));
-        if(!(is_file($in_file))){
-            shell_exec("touch ". $in_file);
-        }
-        else if(!(is_file($out_file))){
-            shell_exec("touch ". $out_file);
-        }
-        else if (!(is_file($rc_file))){
-            shell_exec("echo '0' > ". $rc_file);
-        }
-        if($ret_value == 0){
-            if($ret_value == $ref_ret_value){
-                $rc_correct = true;
-                echo "<td style=\"background-color: green;\">OK</td>";
-                echo "<td style=\"background-color: green;\"> (". $ret_value . ")----------(". $ref_ret_value .")</td>";
-                $diff_output = intval(shell_exec("java -jar ". $file_jexamxml ." ".
+            $ret_value = intval(shell_exec("php ". $file_parse ." < ".$file." > ". $tmp_file .
+                                                 " 2>/dev/null; echo $?"));
+            $diff_output = intval(shell_exec("java -jar ". $file_jexamxml ." ".
                                                  $out_file." ".$tmp_file." ". $diff_file .
                                                  " ". $file_options ." >/dev/null ; echo $?"));
+        }
+        $ref_ret_value = intval(shell_exec("cat ".$rc_file));
+        if($ret_value == 0){
+            if($ret_value == $ref_ret_value){
+                $rc_correct = true;
+
+                echo "<td style=\"background-color: green;\">OK</td>" .PHP_EOL.
+                     "<td style=\"background-color: green;\"> (". $ret_value . ")----------(". $ref_ret_value .")</td>";
                 if($diff_output == 0){
                     echo"<td style=\"background-color: green;\">OK</td>" . PHP_EOL;
                 }
@@ -220,27 +178,35 @@ function parser_test($src_files, $file_parse, $file_jexamxml, $file_options){
                 }
             }
             else{
-                echo "<td style=\"background-color: red;\">BAD</td>";
-                echo "<td style=\"background-color: red;\"> got-(". $ret_value . ")  expected-(". $ref_ret_value .")</td>";
-                echo"<td style=\"background-color: orange;\">BAD RC</td>" . PHP_EOL;
-                echo"<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
+                echo "<td style=\"background-color: red;\">BAD</td>".PHP_EOL.
+                     "<td style=\"background-color: red;\">".
+                     "got-(". $ret_value . ")  expected-(". $ref_ret_value .")".
+                     "</td>".PHP_EOL.
+                     "<td style=\"background-color: orange;\">BAD RC</td>" . PHP_EOL.
+                     "<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
             }
         }
         else{
             if($ret_value == $ref_ret_value){
-                echo "<td style=\"background-color: green;\">OK</td>";
-                echo "<td style=\"background-color: green;\"> (". $ret_value . ")----------(". $ref_ret_value .")</td>";
-                echo"<td style=\"background-color: green;\">OK</td>" . PHP_EOL;
-                echo"<td style=\"background-color: green;\">PASS</td></tr>" . PHP_EOL;
+                echo "<td style=\"background-color: green;\">OK</td>".PHP_EOL.
+                     "<td style=\"background-color: green;\">".
+                     " (". $ret_value . ")----------(". $ref_ret_value .")</td>".PHP_EOL.
+                     "<td style=\"background-color: green;\">OK</td>" . PHP_EOL.
+                     "<td style=\"background-color: green;\">PASS</td></tr>" . PHP_EOL;
             }
             else{
-                echo "<td style=\"background-color: red;\">BAD</td>";
-                echo "<td style=\"background-color: red;\"> got-(". $ret_value . ")  expected-(". $ref_ret_value .")</td>";
-                echo"<td style=\"background-color: orange;\">BAD RC</td>" . PHP_EOL;
-                echo"<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
+                echo "<td style=\"background-color: red;\">BAD</td>".PHP_EOL.
+                     "<td style=\"background-color: red;\">".
+                     "got-(". $ret_value . ")  expected-(". $ref_ret_value .")".
+                     "</td>".PHP_EOL.
+                     "<td style=\"background-color: orange;\">BAD RC</td>" . PHP_EOL.
+                     "<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
             }
         }
         shell_exec("rm ". $tmp_file);
+        if ($parse_ret_value == 0){
+            shell_exec("rm ". $tmp_file2);
+        }
         $index = $index + 1;
     }
 }
@@ -248,24 +214,24 @@ function parser_test($src_files, $file_parse, $file_jexamxml, $file_options){
 #######FUNCTIONS#########
 
 $files = array();
-$curr_argument = array();
+$arguments = array();
 #$file_jexamxml = "/pub/courses/ipp/jexamxml/jexamxml.jar"
 #$file_options = "/pub/courses/ipp/jexamxml/options"
 $file_options = "/Users/marekziska/Desktop/IPP/projekt/jexamxml/options";
 $file_jexamxml = "/Users/marekziska/Desktop/IPP/projekt/jexamxml/jexamxml.jar";
-$file_int = "interpret.py";
-$file_parse = "parse.php";
+$file_int = "../interpreter/interpret.py";
+$file_parse = "../parser/parser.php";
 if($argc == 1){
     exit(1);
 }
 else{
     $i = 1;
     while($i < $argc){
-        array_push($curr_argument, get_argument($argv[$i], $location_dir, $file_parse, $file_int, $file_jexamxml));
+        array_push($arguments, get_argument($argv[$i], $location_dir, $file_parse, $file_int, $file_jexamxml));
         $i++;
     }
-    if(in_array(Arguments::Help, $curr_argument)){
-        if(count($curr_argument) == 1){
+    if(in_array(Arguments::Help, $arguments)){
+        if(count($arguments) == 1){
             echo "napoveda";
             exit(0);
         }
@@ -274,10 +240,10 @@ else{
             exit(10);
         }
     }
-    if(!(in_array(Arguments::Directory, $curr_argument))){
-            $location_dir = getcwd();
+    if(!(in_array(Arguments::Directory, $arguments))){
+        $location_dir = getcwd();
     }
-    if(in_array(Arguments::Recursive, $curr_argument)){
+    if(in_array(Arguments::Recursive, $arguments)){
             search_subdir($location_dir, $files, True);
             $src_files = get_src_files($files);
     }
@@ -285,64 +251,40 @@ else{
             search_subdir($location_dir, $files, False);
             $src_files = get_src_files($files);
     }
-    if(in_array(Arguments::ParseOnly, $curr_argument) || in_array(Arguments::ParseScript, $curr_argument)){
-        if(in_array(Arguments::IntOnly, $curr_argument) || in_array(Arguments::IntScript, $curr_argument)){
+    if((in_array(Arguments::ParseOnly, $arguments) && in_array(Arguments::IntScript, $arguments)) ||
+       (in_array(Arguments::ParseOnly, $arguments) && in_array(Arguments::IntOnly, $arguments)) ||
+       (in_array(Arguments::ParseScript, $arguments) && in_array(Arguments::IntOnly, $arguments))){
             fwrite(STDERR, "Restricted combination of arguments!" . PHP_EOL);
             exit(10);
-        }
-        else{
-            search_subdir($location_dir, $files, False);
-            $src_files = get_src_files($files);
-        }
-        echo "<!DOCTYPE html>" . PHP_EOL .
-             "<html lang=\"en\">" . PHP_EOL .
-             "<head>" . PHP_EOL .
-             "<meta charset=\"utf-8\"/>" . PHP_EOL .
-             "<title> IPP - principy programovacich jazykov</title>" . PHP_EOL .
-             "</head>" . PHP_EOL .
-             "<body style=\"text-align: center\">" . PHP_EOL .
-             "<section class=\"container\">" . PHP_EOL .
-             "<h2>TESTY K INTERPRETU Z PREDMETU IPP</h2>" . PHP_EOL .
-             "<div>" . PHP_EOL .
-             "<table style=\"align: center; margin: auto;\">" . PHP_EOL .
-             "<tr style=\"background-color: dodgerblue;\"><td style=\"width: 80px\">order</td><td style=\"width: 250px;\">file".
-             "name</td><td style=\"width: 300px\">.rc status</td><td style=\"width: 300px\">rc - received vs expected</td><td style=\"width:".
-             "300px\">.out status</td><td style=\"width:120px\">RESULT</td></tr>" . PHP_EOL;
+    }
 
-        parser_test($src_files, $file_parse, $file_jexamxml, $file_options);
-    }
-    else if(in_array(Arguments::IntOnly, $curr_argument)|| in_array(Arguments::IntScript, $curr_argument)){
-        if(in_array(Arguments::ParseOnly, $curr_argument) || in_array(Arguments::ParseScript, $curr_argument)){
-            fwrite(STDERR, "Restricted combination of arguments!" . PHP_EOL);
-            exit(10);
-        }
-        echo "<!DOCTYPE html>" . PHP_EOL .
-             "<html lang=\"en\">" . PHP_EOL .
-             "<head>" . PHP_EOL .
-             "<meta charset=\"utf-8\"/>" . PHP_EOL .
-             "<title> IPP - principy programovacich jazykov</title>" . PHP_EOL .
-             "</head>" . PHP_EOL .
-             "<body style=\"text-align: center\">" . PHP_EOL .
-             "<section class=\"container\">" . PHP_EOL .
-             "<h2>TESTY K INTERPRETU Z PREDMETU IPP</h2>" . PHP_EOL .
-             "<div>" . PHP_EOL .
-             "<table style=\"align: center; margin: auto;\">" . PHP_EOL .
-             "<tr style=\"background-color: dodgerblue;\"><td style=\"width: 80px\">order</td><td style=\"width: 250px;\">file".
-             "name</td><td style=\"width: 300px\">.rc status</td><td style=\"width: 300px\">rc - received vs expected</td><td style=\"width:".
-             "300px\">.out status</td><td style=\"width:120px\">RESULT</td></tr>" . PHP_EOL;
+    echo "<!DOCTYPE html5>" . PHP_EOL .
+         "<html lang=\"en\">" . PHP_EOL .
+         "<head>" . PHP_EOL .
+         "<meta charset=\"utf-8\"/>" . PHP_EOL .
+         "<title> IPP - principy programovacich jazykov</title>" . PHP_EOL .
+         "</head>" . PHP_EOL .
+         "<body style=\"text-align: center\">" . PHP_EOL .
+         "<section class=\"container\">" . PHP_EOL .
+         "<h2>TESTY K INTERPRETU Z PREDMETU IPP</h2>" . PHP_EOL .
+         "<div>" . PHP_EOL .
+         "<table style=\"text-align: center; margin: auto;\">" . PHP_EOL .
+         "<tr style=\"background-color: dodgerblue;\">". PHP_EOL .
+         "<td style=\"width: 80px\">order</td>". PHP_EOL .
+         "<td style=\"width: 250px;\">filename</td>". PHP_EOL .
+         "<td style=\"width: 300px\">.rc status</td>". PHP_EOL .
+         "<td style=\"width: 300px\">rc - received vs expected</td>". PHP_EOL .
+         "<td style=\"width:300px\">.out status</td>". PHP_EOL .
+         "<td style=\"width:120px\">RESULT</td></tr>" . PHP_EOL;
 
-        interpret_test($src_files, $file_int);
-    }
-    else{
-        fwrite(STDERR, "Wrong combination of arguments!" . PHP_EOL);
-        exit(10);
-    }
+    compare_script_outputs($src_files, $file_int, $file_parse, $arguments, $file_jexamxml, $file_options);
+
     echo "</table> " . PHP_EOL .
          "</div>" . PHP_EOL .
          "</section>" . PHP_EOL .
-        "</body>" . PHP_EOL .
-        "</html>";
-    exit(1);
+         "</body>" . PHP_EOL .
+         "</html>";
+    exit(0);
 }
 
 ?>

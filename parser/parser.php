@@ -21,7 +21,10 @@ $headerNotFound = True;
 $Output = new OutputXML();
 $Output->initXML();
 $Instruct = new Instruction();
-while(($header = fgets(STDIN)) == "\n"){
+$header = fgets(STDIN);
+while($header == "\n"){
+    echo "wtf\n";
+    $header = fgets(STDIN);
 }
 
 $Instruct->checkHeader($Instruct, $header);
@@ -30,7 +33,9 @@ while(!feof(STDIN)){
 
     }
     $line = fgets(STDIN);
-    $Instruct->parse($line, $Output);
+    if ((trim($line)) != "") {
+         $Instruct->parse($line, $Output);
+    }
 }
 $Output->printXML();
 
@@ -54,11 +59,11 @@ class OutputXML{
         $symbCount = 0;
         $this->insElement = $this->xml->createElement("instruction");
         for($i = 1; $i < $argCount; $i++){
-            if($symbParts){
+            if(!(is_null($symbParts))){
                 $this->appendArgument($i, $argTypes[$i-1], $partitions[$i], $symbParts[$symbCount], $symbCount);
             }
             else{
-                $this->appendArgument($i, $argTypes[$i-1], $partitions[$i], NULL, $symbCount);
+                $this->appendArgumentNull($i, $argTypes[$i-1], $partitions[$i], $symbCount);
             }
         }
         $this->insElement->setAttribute("order", $insCount);
@@ -76,19 +81,53 @@ class OutputXML{
             break;
             case "symb":
                 $symbCount++;
-                if($symbParts === NULL){
-                    $this->argElement->setAttribute("type", "var");
-                    $this->argElement->nodeValue = $argument;
-                }
-                else{
-                    $this->argElement->setAttribute("type", $symbParts[0]);
-                    if(count($symbParts) == 1){
-                        $this->argElement->nodeValue = "";
+                    if(in_array($symbParts[0],["int", "string", "nil", "bool"])){
+                        $this->argElement->setAttribute("type", $symbParts[0]);
+                        if(count($symbParts) == 1){
+                            $this->argElement->nodeValue = "";
+                        }
+                        else{
+                            $this->argElement->nodeValue = $symbParts[1];
+                        }
                     }
                     else{
-                        $this->argElement->nodeValue = $symbParts[1];
+                        $this->argElement->setAttribute("type", "var");
+                        if(count($symbParts) == 1){
+                            $this->argElement->nodeValue = "";
+                        }
+                        else{
+                            $this->argElement->nodeValue = $symbParts[0]."@".$symbParts[1];
+                        }
                     }
-                }
+
+            break;
+            case "label":
+                $this->argElement->setAttribute("type", "label");
+                $this->argElement->nodeValue = $argument;
+            break;
+            case "type":
+                $this->argElement->setAttribute("type", "type");
+                $this->argElement->nodeValue = $argument;
+            break;
+            default:
+                echo $argument;
+                fwrite(STDERR, "unknown argument type!\n");
+                exit(23);
+        }
+        $this->argElement = $this->insElement->appendChild($this->argElement);
+    }
+
+    public function appendArgumentNull($argCount, $argType, $argument, &$symbCount){
+        $this->argElement = $this->xml->createElement("arg".$argCount);
+        switch($argType){
+            case "var":
+                $this->argElement->setAttribute("type", "var");
+                $this->argElement->nodeValue = $argument;
+            break;
+            case "symb":
+                $symbCount++;
+                $this->argElement->setAttribute("type", "var");
+                $this->argElement->nodeValue = $argument;
             break;
             case "label":
                 $this->argElement->setAttribute("type", "label");
@@ -152,6 +191,7 @@ class Instruction{
         $inputLine = trim($inputLine);
         preg_match('/^(int|bool|string|nil)@.*/', $inputLine, $outputArray);
         if(empty($outputArray)){
+            $symbParts = explode("@", $inputLine);
             preg_match('/^([LF,GF,TF].@.[a-z,A-Z,0-9,\_,\-,\$,\&,\%,\*,\!,\?]*)$/', $inputLine, $outputArray2);
             if(empty($outputArray2)){
                 fwrite(STDERR, "Wrong symbol syntax!\n");
@@ -238,6 +278,7 @@ class Instruction{
         $this->partitions[0] = strtoupper($this->partitions[0]);
         switch ($this->partitions[0]){
             case "MOVE":
+            case "NOT":
                 $this->checkArgCount(3);
                 $this->correctVarSyntax($this->partitions[1]);
                 $this->correctSymbSyntax($this->partitions[2], $symbParts[0]);
@@ -321,7 +362,6 @@ class Instruction{
             case "EQ":
             case "AND":
             case "OR":
-            case "NOT":
                 $this->checkArgCount(4);
                 $this->correctVarSyntax($this->partitions[1]);
                 $this->correctSymbSyntax($this->partitions[2], $symbParts[0]);
@@ -353,7 +393,7 @@ class Instruction{
             break;
             case "WRITE":
                 $this->checkArgCount(2);
-                $this->correctSymbSyntax($this->partitions[2], $symbParts[0]);
+                $this->correctSymbSyntax($this->partitions[1], $symbParts[0]);
                 $argTypes = ['symb'];
                 $Output->appendInstruction($this->partitions, $this->insCount, $this->argCount, $argTypes, $symbParts);
             break;
@@ -418,13 +458,13 @@ class Instruction{
             break;
             case "EXIT":
                 $this->checkArgCount(2);
-                $this->correctSymbSyntax($this->partitions[2], $symbParts[0]);
+                $this->correctSymbSyntax($this->partitions[1], $symbParts[0]);
                 $argTypes = ['symb'];
                 $Output->appendInstruction($this->partitions, $this->insCount, $this->argCount, $argTypes, $symbParts);
             break;
             case "DPRINT":
                 $this->checkArgCount(2);
-                $this->correctSymbSyntax($this->partitions[2], $symbParts[0]);
+                $this->correctSymbSyntax($this->partitions[1], $symbParts[0]);
                 $argTypes = ['symb'];
                 $Output->appendInstruction($this->partitions, $this->insCount, $this->argCount, $argTypes, $symbParts);
             break;

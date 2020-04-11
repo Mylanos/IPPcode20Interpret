@@ -10,12 +10,14 @@ class Instruction:
         self.arg_count = 0
 
     def check_inst_without_args(self):
-        if self.name not in ["POPFRAME", "RETURN", "PUSHFRAME", "CREATEFRAME", "BREAK"]:
+        if self.name not in ["POPFRAME", "RETURN", "PUSHFRAME", "CREATEFRAME", "BREAK", "ADDS", "SUBS", "MULS",
+                             "IDIVS", "LTS", "GTS", "EQS", "ANDS", "ORS", "NOTS", "INT2CHARS", "STRI2INTS", "CLEARS"]:
             raise XMLformatError("Error 32: Unknown instruction or valid instruction without needed arguments!"
                                  " Got (" + self.name + ")")
 
     def check_argument_count(self, count):
-        if self.name in ["DEFVAR", "POPS", "PUSHS", "WRITE", "EXIT", "DPRINT", "CALL", "LABEL", "JUMP"] and count == 1 \
+        if self.name in ["DEFVAR", "POPS", "PUSHS", "WRITE", "EXIT", "DPRINT", "CALL", "LABEL", "JUMP",
+                         "JUMPIFEQS", "JUMPIFNEQS"] and count == 1 \
             or self.name in ["MOVE", "INT2CHAR", "STRLEN", "TYPE", "NOT", "READ"] and count == 2 \
             or self.name in ["ADD", "SUB", "MUL", "IDIV", "LT", "GT", "EQ", "AND", "OR", "STRI2INT",
                              "CONCAT", "GETCHAR", "SETCHAR", "JUMPIFEQ", "JUMPIFNEQ"] and count == 3:
@@ -41,7 +43,7 @@ class Instruction:
             if arg_type in ["string", "bool", "int", "nil", "var"]:
                 return
         # instruction expects label
-        elif self.name in ["CALL", "LABEL", "JUMP"]:
+        elif self.name in ["CALL", "LABEL", "JUMP", "JUMPIFEQS", "JUMPIFNEQS"]:
             if arg_type == "label":
                 return
         # instruction expects var,symb

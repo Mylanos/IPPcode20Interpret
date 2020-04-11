@@ -1,2 +1,0 @@
-.IPPcode20
-JUMPIFEQ bool@true GF@var label
