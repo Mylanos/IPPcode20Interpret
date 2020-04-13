@@ -113,7 +113,12 @@ function compare_script_outputs($src_files, $file_int, $file_parse, $arguments, 
     $index = 1;
     $rc_correct = false;
     $parse_ret_value = 1;
+    $passed_count = 0;
+    $fail_count = 0;
+    $rate = 0;
     foreach ($src_files as &$file){
+        $XML_flag = shell_exec("file -b ".$file." | grep XML >/dev/null ; echo $?");
+        $in_file_format = shell_exec("file -b ".$file);
         echo "<tr><td style=\"background-color: cornflowerblue\">" . $index ."</td>".PHP_EOL.
              "</td><td style=\"background-color:darkgrey;\">".$file."</td>";
         $out_file = replace_suffix($file, ".out");
@@ -132,13 +137,19 @@ function compare_script_outputs($src_files, $file_int, $file_parse, $arguments, 
             shell_exec("echo '0' > ". $rc_file);
         }
         if(!(in_array(Arguments::IntOnly, $arguments)) && !(in_array(Arguments::ParseOnly, $arguments))){
-            $parse_ret_value = intval(shell_exec("php ". $file_parse ." < ".$file." > ". $tmp_file .
+            if($XML_flag != 0){
+                $parse_ret_value = intval(shell_exec("php ". $file_parse ." < ".$file." > ". $tmp_file .
                                                  " 2>/dev/null; echo $?"));
+            }
+            else{
+                $parse_ret_value = 0;
+            }
 
             if($parse_ret_value == 0){
                 $ret_value = intval(shell_exec("python3 ". $file_int ." --source=".$tmp_file." --input=".$in_file." > ".
                                        $tmp_file2 ." 2>/dev/null; echo $?"));
                 $diff_output = intval(shell_exec("diff ". $out_file." ".$tmp_file2." ; echo $?"));
+                 $out_file_format = shell_exec("file -b ".$tmp_file2);
             }
             else{
                 $ret_value = $parse_ret_value;
@@ -149,6 +160,7 @@ function compare_script_outputs($src_files, $file_int, $file_parse, $arguments, 
             $ret_value = intval(shell_exec("python3 ". $file_int ." --source=".$file." --input=".$in_file." > ".
                                        $tmp_file ." 2>/dev/null; echo $?"));
             $diff_output = intval(shell_exec("diff ". $out_file." ".$tmp_file." ; echo $?"));
+            $out_file_format = shell_exec("file -b ".$tmp_file);
         }
         else{
             $ret_value = intval(shell_exec("php ". $file_parse ." < ".$file." > ". $tmp_file .
@@ -156,59 +168,69 @@ function compare_script_outputs($src_files, $file_int, $file_parse, $arguments, 
             $diff_output = intval(shell_exec("java -jar ". $file_jexamxml ." ".
                                                  $out_file." ".$tmp_file." ". $diff_file .
                                                  " ". $file_options ." >/dev/null ; echo $?"));
+             $out_file_format = shell_exec("file -b ".$tmp_file);
         }
         $ref_ret_value = intval(shell_exec("cat ".$rc_file));
-        if($ret_value == 0){
-            if($ret_value == $ref_ret_value){
-                $rc_correct = true;
-
-                echo "<td style=\"background-color: green;\">OK</td>" .PHP_EOL.
-                     "<td style=\"background-color: green;\"> (". $ret_value . ")----------(". $ref_ret_value .")</td>";
-                if($diff_output == 0){
-                    echo"<td style=\"background-color: green;\">OK</td>" . PHP_EOL;
+        if($ret_value == $ref_ret_value){
+            $rc_correct = true;
+            echo "<td style=\"background-color: green;\">OK</td>" .PHP_EOL.
+                 "<td style=\"background-color: green;\"> (". $ret_value . ")----------(". $ref_ret_value .")</td>";
+            if($diff_output == 0){
+                if($out_file_format != "empty"){
+                     echo"<td style=\"background-color: green;\">".$out_file_format."</td>" . PHP_EOL;
                 }
                 else{
-                    echo"<td style=\"background-color: red;\">BAD (". $diff_output .")</td>" . PHP_EOL;
+                    echo"<td style=\"background-color: green;\">.</td>" . PHP_EOL;
                 }
-                if($diff_output == 0 and $rc_correct){
-                    echo"<td style=\"background-color: green;\">PASS</td></tr>" . PHP_EOL;
-                }
-                else{
-                    echo"<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
-                }
+                echo"<td style=\"background-color: green;\">OK</td>" . PHP_EOL;
             }
             else{
-                echo "<td style=\"background-color: red;\">BAD</td>".PHP_EOL.
-                     "<td style=\"background-color: red;\">".
-                     "got-(". $ret_value . ")  expected-(". $ref_ret_value .")".
-                     "</td>".PHP_EOL.
-                     "<td style=\"background-color: orange;\">BAD RC</td>" . PHP_EOL.
-                     "<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
+                echo"<td style=\"background-color: red;\">".$out_file_format."</td>" . PHP_EOL;
+                echo"<td style=\"background-color: red;\">BAD (". $diff_output .")</td>" . PHP_EOL;
+            }
+            if($diff_output == 0 and $rc_correct){
+                $passed_count += 1;
+                echo"<td style=\"background-color: green;\">PASS</td></tr>" . PHP_EOL;
+            }
+            else{
+                $fail_count += 1;
+                echo"<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
             }
         }
         else{
-            if($ret_value == $ref_ret_value){
-                echo "<td style=\"background-color: green;\">OK</td>".PHP_EOL.
-                     "<td style=\"background-color: green;\">".
-                     " (". $ret_value . ")----------(". $ref_ret_value .")</td>".PHP_EOL.
-                     "<td style=\"background-color: green;\">OK</td>" . PHP_EOL.
-                     "<td style=\"background-color: green;\">PASS</td></tr>" . PHP_EOL;
-            }
-            else{
-                echo "<td style=\"background-color: red;\">BAD</td>".PHP_EOL.
-                     "<td style=\"background-color: red;\">".
-                     "got-(". $ret_value . ")  expected-(". $ref_ret_value .")".
-                     "</td>".PHP_EOL.
-                     "<td style=\"background-color: orange;\">BAD RC</td>" . PHP_EOL.
-                     "<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
-            }
+            $fail_count += 1;
+            echo "<td style=\"background-color: red;\">BAD</td>".PHP_EOL.
+                 "<td style=\"background-color: red;\">".
+                 "got-(". $ret_value . ")  expected-(". $ref_ret_value .")".
+                 "</td>".PHP_EOL.
+                 "<td style=\"background-color: orange;\">BAD RC</td>" . PHP_EOL.
+                 "<td style=\"background-color: orange;\">BAD RC</td>" . PHP_EOL.
+                 "<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
         }
+
         shell_exec("rm ". $tmp_file);
         if ($parse_ret_value == 0){
             shell_exec("rm ". $tmp_file2);
         }
         $index = $index + 1;
     }
+    $test_count = $index - 1;
+    if($fail_count != 0){
+        $percento = $test_count / 100;
+        $rate = $passed_count / $percento;
+        $rate = round($rate);
+    }
+    echo "</table> " . PHP_EOL .
+         "<div style=\"font-size: 20px;\">" . PHP_EOL .
+         "<h3> TOTAL TESTS: ". $test_count ."</h3>" . PHP_EOL .
+         "<h3>      PASSED: ".$passed_count."</h3>" . PHP_EOL .
+         "<h3>        FAIL: ".$fail_count."</h3>" . PHP_EOL .
+         "<h2>SUCCESS RATE: ".$rate."%</h2>" . PHP_EOL .
+         "</div>" . PHP_EOL .
+         "</div>" . PHP_EOL .
+         "</section>" . PHP_EOL .
+         "</body>" . PHP_EOL .
+         "</html>";
 }
 
 #######FUNCTIONS#########
@@ -245,11 +267,11 @@ else{
     }
     if(in_array(Arguments::Recursive, $arguments)){
             search_subdir($location_dir, $files, True);
-            $src_files = get_src_files($files);
+            $src_files = get_src_files($files, $arguments);
     }
     else{
             search_subdir($location_dir, $files, False);
-            $src_files = get_src_files($files);
+            $src_files = get_src_files($files, $arguments);
     }
     if((in_array(Arguments::ParseOnly, $arguments) && in_array(Arguments::IntScript, $arguments)) ||
        (in_array(Arguments::ParseOnly, $arguments) && in_array(Arguments::IntOnly, $arguments)) ||
@@ -274,16 +296,11 @@ else{
          "<td style=\"width: 250px;\">filename</td>". PHP_EOL .
          "<td style=\"width: 300px\">.rc status</td>". PHP_EOL .
          "<td style=\"width: 300px\">rc - received vs expected</td>". PHP_EOL .
+         "<td style=\"width:300px\">.out content</td>". PHP_EOL .
          "<td style=\"width:300px\">.out status</td>". PHP_EOL .
          "<td style=\"width:120px\">RESULT</td></tr>" . PHP_EOL;
 
     compare_script_outputs($src_files, $file_int, $file_parse, $arguments, $file_jexamxml, $file_options);
-
-    echo "</table> " . PHP_EOL .
-         "</div>" . PHP_EOL .
-         "</section>" . PHP_EOL .
-         "</body>" . PHP_EOL .
-         "</html>";
     exit(0);
 }
 

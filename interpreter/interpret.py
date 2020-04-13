@@ -45,6 +45,7 @@ class Interpret:
         parser.parse()
         self.instr_list = parser.instr_list
         try:
+            # stores indexes of labels, needed later in jumps
             self.search_and_store_labels(self.instr_list)
             # statistics class
             self.statistics = Stats(args)
@@ -401,15 +402,21 @@ class Interpret:
             elif instruct.name in ["SUB", "SUBS"]:
                 result = arg_value1 - arg_value2
             else:
-                raise WrongOperandsError("Error 53: Passed arguments are not compatible with instruction! " +
-                                         "(\"" + instruct.name + "\")")
-            self.__store_value(frame, name, result, arg_type1, stack)
-        elif arg_type1 == "int" and arg_type2 == "int":
+                if arg_type1 != "int":
+                    raise WrongOperandsError("Error 53: Passed arguments are not compatible with instruction! " +
+                                             "(\"" + instruct.name + "\")")
+            if result is not None:
+                self.__store_value(frame, name, result, arg_type1, stack)
+                return
+        if arg_type1 == "int" and arg_type2 == "int":
             if instruct.name in ["IDIV", "IDIVS"]:
                 if arg_value2 == 0:
                     raise OperandsValueError("Error 57: DIV instruction tried to divide by zero!")
                 result = arg_value1 / arg_value2
                 result = int(result)
+            else:
+                raise WrongOperandsError("Error 53: Passed arguments are not compatible with instruction! " +
+                                         "(\"" + instruct.name + "\")")
             self.__store_value(frame, name, result, arg_type1, stack)
         elif arg_type2 == "nil" or arg_type1 == "nil":
             if instruct.name in ["EQ", "EQS"]:
@@ -423,9 +430,9 @@ class Interpret:
                                      "both operands of the same type !")
 
     def __type(self, instruct):
-        """
+        """ Executes TYPE instruction
         Args:
-            instruct:
+            instruct: Instruction object
         """
         frame, name = self.__split_argument_content(instruct.arg_contents[0])
         arg_type, arg_value = self.__get_value_symb(instruct, 1, False)
@@ -440,9 +447,10 @@ class Interpret:
                 raise InternalError("Error 99: Internal error, unknown type! ")
 
     def __string_operations(self, instruct, stack):
-        """
+        """ Executes commands [INT2CHAR/INT2CHARS,STRLEN,INT2FLOAT/FLOAT2INT,STRI2INT/STRI2INTS,CONCAT,
+                            GETCHAR,SETCHAR]
         Args:
-            instruct:
+            instruct: Instruction object
         """
         frame = None
         name = None
@@ -546,9 +554,9 @@ class Interpret:
                 raise SemanticError("Error 52: Instruction JUMP/CALL received undefined label!")
 
     def __debug_instructions(self, instruct):
-        """
+        """ Executes [BREAK, DPRINT]
         Args:
-            instruct:
+            instruct: Instruction class
         """
         if instruct.name == "BREAK":
             print("custom break output", file=sys.stderr, end="")
@@ -557,9 +565,9 @@ class Interpret:
             print(arg_value, file=sys.stderr, end="")
 
     def __stack_instructions(self, instruct):
-        """
+        """ Executes [POPS, PUSHS]
         Args:
-            instruct:
+            instruct: Instruction class
         """
         if instruct.name == "PUSHS":
             arg_type, arg_value = self.__get_value_symb(instruct, 0, False)
@@ -575,10 +583,10 @@ class Interpret:
                 raise MissingValueError("Error 56: Instruction POP was called on empty stack!")
 
     def __cond_jumps(self, instruct, stack):
-        """
+        """ Executes [JUMPIFNEQ/JUMPIFNEQS, JUMPIFEQ/JUMPIFEQS, ]
         Args:
-            instruct:
-            stack:
+            instruct: Instruction class
+            stack: flag when called in stack instructions
         """
         if instruct.arg_contents[0] not in self.label_dict:
             raise SemanticError("Error 52: Instruction JUMPIFEQ/JUMPIFNEQ received undefined label!")
@@ -604,7 +612,7 @@ class Interpret:
                 "Error 53: Instruction JUMPIFEQ/JUMPIFNEQ received wrong operands type! " + str(self.instr_index))
 
     def __is_int(self, string):
-        """
+        """ Determines if passed string is int
         Args:
             string:
         """
@@ -615,9 +623,9 @@ class Interpret:
             return False
 
     def __read(self, instruct):
-        """
+        """ Instruction READ reads data from stdin
         Args:
-            instruct:
+            instruct: Instruction class
         """
         frame, name = self.__split_argument_content(instruct.arg_contents[0])
         _type = instruct.arg_contents[1]

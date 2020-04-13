@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 
+##################################################
+ # Soubor: myerrors.py
+ # Projekt - Interpret of IPPcode20's XML representation
+ # Autor: Marek Ziska, xziska03@stud.fit.vutbr.cz
+ # Skupina: 2BIB
+ # Datum 14.04.2020
+##################################################
+
 
 class Error(Exception):
     def __init__(self, message):

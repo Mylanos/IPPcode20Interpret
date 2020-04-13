@@ -7,6 +7,10 @@ from myerrors import *
 
 class Arguments:
     def __init__(self, args):
+        """
+        Args:
+            args: Arguments list
+        """
         self.args = args
         self.sourceFile = None
         self.inputFile = None
@@ -25,6 +29,8 @@ class Arguments:
             sys.exit(99)
 
     def __parse_args(self):
+        """ Parses arguments with regexes
+        """
         for argument in self.args:
             source_arg = re.match("^(--source=(([A-Z]|[a-z]|/|_|[0-9]|.)+))$", argument)
             input_arg = re.match("^(--input=(([A-Z]|[a-z]|/|_|[0-9]|.)+))$", argument)
@@ -56,10 +62,14 @@ class Arguments:
                 raise ArgError("Unknown argument or format of the argument! (" + argument + ")")
 
     def __check_errors(self):
+        """ checks for missing mandatory argument
+        """
         if not("input" in self.passedArgs or "source" in self.passedArgs):
             raise ArgError("Program did not receive any of mandatory arguments! (--source=file, --input=file)")
 
     def __check_arg_count(self):
+        """ checks for excessive arguments
+        """
         if len(self.args) > 6 or len(self.args) == 0:
             raise ArgError("Unsupported amount of arguments! (" + str(len(self.args)) + ")")
 

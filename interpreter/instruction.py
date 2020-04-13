@@ -4,6 +4,10 @@ from myerrors import XMLformatError
 
 class Instruction:
     def __init__(self, name):
+        """
+        Args:
+            name: name of a instruction
+        """
         self.name = name
         self.arg_types = []
         self.arg_contents = []
@@ -16,6 +20,10 @@ class Instruction:
                                  " Got (" + self.name + ")")
 
     def check_argument_count(self, count):
+        """
+        Args:
+            count: expected count of Instructions arguments
+        """
         if self.name in ["DEFVAR", "POPS", "PUSHS", "WRITE", "EXIT", "DPRINT", "CALL", "LABEL", "JUMP",
                          "JUMPIFEQS", "JUMPIFNEQS"] and count == 1 \
             or self.name in ["MOVE", "INT2CHAR", "STRLEN", "TYPE", "NOT", "READ", "INT2FLOAT",
@@ -28,6 +36,12 @@ class Instruction:
                 + self.name + "!")
 
     def arg_append(self, arg_type, arg_content, arg_count):
+        """ Controls flow of arguments syntax verification
+        Args:
+            arg_type: type of argument
+            arg_content: content of argument
+            arg_count: order of an incoming argument
+        """
         self.arg_count = arg_count
         self.__check_corresponding_args(arg_type)
         arg_value = self.__check_arg_type(arg_type, arg_content)
@@ -36,6 +50,10 @@ class Instruction:
 
     def __check_corresponding_args(self, arg_type):
         # instruction expects var
+        """
+        Args:
+            arg_type: type of argument
+        """
         if self.name in ["DEFVAR", "POPS"]:
             if arg_type == "var":
                 return
@@ -77,6 +95,11 @@ class Instruction:
                              + self.name + "!")
 
     def __check_arg_type(self, arg_type, arg_content):
+        """
+        Args:
+            arg_type: type of argument
+            arg_content: content of argument
+        """
         if arg_type == "type":
             if re.match('^(int|string|bool|float)$', arg_content):
                 return arg_content
@@ -115,6 +138,10 @@ class Instruction:
                              self.name + " is not valid! Got \"" + arg_content + "\"")
 
     def __transform_escape_sequences(self, string):
+        """
+        Args:
+            string: string in form of escape sequence "\000"
+        """
         espace_sequences = re.findall('\\\\\d{3}', string)
         if espace_sequences:
             for seq in espace_sequences:

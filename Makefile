@@ -3,7 +3,7 @@ PYTHON=python3
 LINKS=-lm
 CFLAGS=-std=c11 -Wall -Wextra -pedantic -g
 TEST_PARSER_DIC=tests/parse-only/int
-TEST_INT_DIC=tests/interpret-only/arithmetic
+TEST_INT_DIC=tests/interpret-only
 TEST_INT_BOTH=tests/both
 TEST_INT_STACK=tests/interpret-advanced/stack_tests
 TEST_INT_FLOAT=tests/interpret-advanced/float_tests
@@ -18,6 +18,7 @@ STACK_OUTPUT=test_output/teststack.html
 FLOAT_OUTPUT=test_output/testfloat.html
 STATS_FILE=stats/test.st
 
+test_int_advanced: test_int_stack test_int_float
 
 test_parser:
 	$(PHP) $(TESTER) --parse-only --parse-script=$(PARSER) --recursive --directory=$(TEST_PARSER_DIC) > $(PARSER_OUTPUT) ;
@@ -36,7 +37,7 @@ test_int_stack:
 	open $(STACK_OUTPUT)
 
 test_int_float:
-	$(PHP) $(PARSER) --recursive --int-only --int-script=$(INTERPRET) --directory=$(TEST_INT_FLOAT) > $(FLOAT_OUTPUT) ;
+	$(PHP) $(TESTER) --recursive --int-only --int-script=$(INTERPRET) --directory=$(TEST_INT_FLOAT) > $(FLOAT_OUTPUT) ;
 	open $(FLOAT_OUTPUT)
 
 test_koule:
