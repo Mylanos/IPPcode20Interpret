@@ -104,18 +104,20 @@ zavináčem).
 ```
 Příklad jednoduchého programu v IPPcode20:
 ```
+```
 .IPPcode
-**DEFVAR** GF@counter
-**MOVE** GF@counter string@ #Inicializace proměnné na prázdný řetězec
+DEFVAR GF@counter
+MOVE GF@counter string@ #Inicializace proměnné na prázdný řetězec
 #Jednoduchá iterace, dokud nebude splněna zadaná podmínka
-**LABEL** while
-**JUMPIFEQ** end GF@counter string@aaa
-**WRITE** string@Proměnná\032GF@counter\032obsahuje\
-**WRITE** GF@counter
-**WRITE** string@\
-**CONCAT** GF@counter GF@counter string@a
-**JUMP** while
-**LABEL** end
+LABEL while
+JUMPIFEQ end GF@counter string@aaa
+WRITE string@Proměnná\032GF@counter\032obsahuje\
+WRITE GF@counter
+WRITE string@\
+CONCAT GF@counter GF@counter string@a
+JUMP while
+LABEL end
+```
 
 Instrukční sada nabízí instrukce pro práci s proměnnými v rámcích, různé skoky, operace s da-
 tovým zásobníkem, aritmetické, logické a relační operace, dále také konverzní, vstupně/výstupní a
