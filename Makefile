@@ -2,12 +2,12 @@ PHP=php
 PYTHON=python3
 LINKS=-lm
 CFLAGS=-std=c11 -Wall -Wextra -pedantic -g
-TEST_PARSER_DIC=tests/parse-only/int
+TEST_PARSER_DIC=tests/parse-only
 TEST_INT_DIC=tests/interpret-only
 TEST_INT_BOTH=tests/both
 TEST_INT_STACK=tests/interpret-advanced/stack_tests
 TEST_INT_FLOAT=tests/interpret-advanced/float_tests
-TEST_KOULE=tests/hardcore-koule/JohnyK/koule_JohnyK.xml
+TEST_KOULE=tests/hardcore-koule/Lakoc/koule_Lakoc.xml
 PARSER=parser/parser.php
 TESTER=tester/test.php
 INTERPRET=interpreter/interpret.py

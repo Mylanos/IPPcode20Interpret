@@ -17,6 +17,7 @@ class Frame:
     def __init__(self):
         self.variables = {}
         self.types = {}
+        self.init_vars = 0
 
     def define_variable(self, name):
         """ Defines variable
@@ -37,6 +38,8 @@ class Frame:
         """
         if name not in self.variables:
             raise AccesingAbsentVariableError("Error 54: Trying to access undefined variable!")
+        if self.variables[name] is None:
+            self.init_vars += 1
         self.variables[name] = value
         self.types[name] = var_type
 

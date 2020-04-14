@@ -37,13 +37,13 @@ class Stats:
         """
         self.instr_count += 1
 
-    def check_vars_count(self, dict):
+    def check_vars_count(self, frame):
         """ counts instructions
         Args:
-            count: Ammount of variables to be added to statistics
+            :param frame: observed frame
         """
-        if len(dict) > self.max_vars_count:
-            self.max_vars_count = len(dict)
+        if frame.init_vars > self.max_vars_count:
+            self.max_vars_count = frame.init_vars
 
     def print_statistics(self):
         """ Prints statistics to desired file
@@ -61,3 +61,4 @@ class Stats:
                     f.write(str(self.max_vars_count))
                 else:
                     pass
+

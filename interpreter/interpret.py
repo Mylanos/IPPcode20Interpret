@@ -86,10 +86,10 @@ class Interpret:
         """ count vars in all frames
         """
         for frame in self.local_frame:
-            self.statistics.check_vars_count(frame.variables)
-        self.statistics.check_vars_count(self.global_frame.variables)
+            self.statistics.check_vars_count(frame)
+        self.statistics.check_vars_count(self.global_frame)
         if self.temporary_frame:
-            self.statistics.check_vars_count(self.temporary_frame.variables)
+            self.statistics.check_vars_count(self.temporary_frame)
 
     def search_and_store_labels(self, instr_list):
         """ Finds all labels, checks for uniqueness of label and saves index
@@ -114,7 +114,7 @@ class Interpret:
         elif instruct.name == "POPFRAME":
             if not self.local_frame:
                 raise FrameDoesntExistError("Error 55: Trying to pop undefined frame!")
-            self.statistics.check_vars_count(self.local_frame[-1].variables)
+            self.statistics.check_vars_count(self.local_frame[-1])
             self.temporary_frame = self.local_frame.pop(-1)
         elif instruct.name == "PUSHFRAME":
             if not self.temporary_frame:

@@ -3,6 +3,7 @@ setlocale(LC_ALL, 'cs_CZ.UTF-8');
 
 #######FUNCTIONS#########
 
+//enum for better readability
 abstract class Arguments
 {
     const Help = 0;
@@ -33,6 +34,10 @@ function get_argument($argString, &$scan_dir, &$file_parse, &$file_int, &$file_j
         if(!(is_dir($scan_dir))){
             fwrite(STDERR, "Entered directory is not valid!");
             exit(11);
+        }
+        if(substr($scan_dir, -1) == "/"){
+            $scan_dir = substr($scan_dir, 0, -1);
+            echo $scan_dir;
         }
         $argument = Arguments::Directory;
     }
@@ -67,23 +72,7 @@ function get_argument($argString, &$scan_dir, &$file_parse, &$file_int, &$file_j
     return $argument;
 }
 
-function search_subdir($location, &$files, $recursively){
-    $curr_dir = scandir($location);
-    foreach ($curr_dir as &$curr_item){
-        if(is_dir($location."/".$curr_item)){
-            if(!($curr_item == "." || $curr_item == "..")){
-                if($recursively){
-                    $new_location = $location."/".$curr_item;
-                    search_subdir($new_location, $files, $recursively);
-                }
-            }
-        }
-        else{
-            array_push($files, $location."/".$curr_item);
-        }
-    }
-}
-
+//checks if string contains given suffix
 function endsWith($haystack, $needle)
 {
     $length = strlen($needle);
@@ -93,16 +82,29 @@ function endsWith($haystack, $needle)
     return (substr($haystack, -$length) === $needle);
 }
 
-function get_src_files($files){
-    $src_files = array();
-    foreach ($files as &$curr_item){
-        if(endsWith($curr_item, ".src")){
-            array_push($src_files, $curr_item);
+function search_subdir($location, &$files, $recursively){
+    $curr_dir = scandir($location);
+    foreach ($curr_dir as &$curr_item){
+        //if its directory and recursively is true search continues
+        if(is_dir($location."/".$curr_item)){
+            //ignore . and .. dirs
+            if(!($curr_item == "." || $curr_item == "..")){
+                if($recursively){
+                    $new_location = $location."/".$curr_item;
+                    search_subdir($new_location, $files, $recursively);
+                }
+            }
+        }
+        else{
+            // if its src file append it
+            if(endsWith($curr_item, ".src")){
+                array_push($files, $location."/".$curr_item);
+            }
         }
     }
-    return $src_files;
 }
 
+//replaces suffix with given suffix
 function replace_suffix($src_file, $suffix){
     $new_file = substr($src_file, 0, -4);
     $new_file = $new_file.$suffix;
@@ -116,8 +118,10 @@ function compare_script_outputs($src_files, $file_int, $file_parse, $arguments, 
     $passed_count = 0;
     $fail_count = 0;
     $rate = 0;
+    //loop over all src files
     foreach ($src_files as &$file){
-        $XML_flag = shell_exec("file -b ".$file." | grep XML >/dev/null ; echo $?");
+        //flag if src file is not XML
+        $not_XML_flag = intval(shell_exec("file -b ".$file." | grep XML >/dev/null ; echo $?"));
         $in_file_format = shell_exec("file -b ".$file);
         echo "<tr><td style=\"background-color: cornflowerblue\">" . $index ."</td>".PHP_EOL.
              "</td><td style=\"background-color:darkgrey;\">".$file."</td>";
@@ -136,55 +140,77 @@ function compare_script_outputs($src_files, $file_int, $file_parse, $arguments, 
         if (!(is_file($rc_file))){
             shell_exec("echo '0' > ". $rc_file);
         }
+        //if --int-only nor --parse-only given try to parse src file with parse.php, use interpret straight away
+        //if its not XML
         if(!(in_array(Arguments::IntOnly, $arguments)) && !(in_array(Arguments::ParseOnly, $arguments))){
-            if($XML_flag != 0){
+            if($not_XML_flag){
                 $parse_ret_value = intval(shell_exec("php ". $file_parse ." < ".$file." > ". $tmp_file .
-                                                 " 2>/dev/null; echo $?"));
+                                                 " 2>/dev/null ; echo $?"));
             }
             else{
                 $parse_ret_value = 0;
             }
-
             if($parse_ret_value == 0){
-                $ret_value = intval(shell_exec("python3 ". $file_int ." --source=".$tmp_file." --input=".$in_file." > ".
+                if($not_XML_flag){
+                     $ret_value = intval(shell_exec("python3 ". $file_int ." --source=".$tmp_file." --input=".$in_file." > ".
                                        $tmp_file2 ." 2>/dev/null; echo $?"));
-                $diff_output = intval(shell_exec("diff ". $out_file." ".$tmp_file2." ; echo $?"));
-                 $out_file_format = shell_exec("file -b ".$tmp_file2);
+                }
+                else{
+                    $ret_value = intval(shell_exec("python3 ". $file_int ." --source=".$file." --input=".$in_file." > ".
+                                       $tmp_file2 ." 2>/dev/null; echo $?"));
+                }
+                shell_exec("cat ". $tmp_file2." > ".$tmp_file."");
+                shell_exec("rm ".$tmp_file2);
+                $diff_output = intval(shell_exec("diff ". $out_file." ".$tmp_file." ; echo $?"));
+                $out_file_format = trim(shell_exec("file -b ".$tmp_file));
             }
             else{
                 $ret_value = $parse_ret_value;
                 //error parser
             }
         }
+        //--int-only use intepreter straight away
         else if(in_array(Arguments::IntOnly, $arguments)){
             $ret_value = intval(shell_exec("python3 ". $file_int ." --source=".$file." --input=".$in_file." > ".
                                        $tmp_file ." 2>/dev/null; echo $?"));
             $diff_output = intval(shell_exec("diff ". $out_file." ".$tmp_file." ; echo $?"));
-            $out_file_format = shell_exec("file -b ".$tmp_file);
+            $out_file_format = trim(shell_exec("file -b ".$tmp_file));
         }
+        //--parse-only use jexamxml for output comparison
         else{
             $ret_value = intval(shell_exec("php ". $file_parse ." < ".$file." > ". $tmp_file .
                                                  " 2>/dev/null; echo $?"));
-            $diff_output = intval(shell_exec("java -jar ". $file_jexamxml ." ".
+            $out_file_format = trim(shell_exec("file -b ".$tmp_file));
+            $expected_format = trim(shell_exec("file -b ".$tmp_file));
+            if($out_file_format != "empty" && $expected_format != "empty"){
+                $diff_output = intval(shell_exec("java -jar ". $file_jexamxml ." ".
                                                  $out_file." ".$tmp_file." ". $diff_file .
                                                  " ". $file_options ." >/dev/null ; echo $?"));
-             $out_file_format = shell_exec("file -b ".$tmp_file);
+            }
+            else{
+                $diff_output = 0;
+            }
         }
         $ref_ret_value = intval(shell_exec("cat ".$rc_file));
+        //if correct value check outputs
         if($ret_value == $ref_ret_value){
             $rc_correct = true;
             echo "<td style=\"background-color: green;\">OK</td>" .PHP_EOL.
-                 "<td style=\"background-color: green;\"> (". $ret_value . ")----------(". $ref_ret_value .")</td>";
+                 "<td style=\"background-color: green;\"> (". $ret_value . ")----------(". $ref_ret_value ."
+                  )</td>".PHP_EOL;
             if($diff_output == 0){
-                if($out_file_format != "empty"){
-                     echo"<td style=\"background-color: green;\">".$out_file_format."</td>" . PHP_EOL;
+                if ($not_XML_flag == 0){
+                    echo"<td style=\"background-color: green;\">XML</td>" . PHP_EOL;
+                    echo"<td style=\"background-color: green;\">OK</td>" . PHP_EOL;
                 }
                 else{
-                    echo"<td style=\"background-color: green;\">.</td>" . PHP_EOL;
+                    echo"<td style=\"background-color: green;\">".$in_file_format."</td>" . PHP_EOL;
+                    echo"<td style=\"background-color: green;\">".$out_file_format."</td>" . PHP_EOL;
                 }
-                echo"<td style=\"background-color: green;\">OK</td>" . PHP_EOL;
+                echo "<td style=\"background-color: green;\">OK</td>" . PHP_EOL;
             }
             else{
+                echo"<td style=\"background-color: green;\">".$in_file_format."</td>" . PHP_EOL;
                 echo"<td style=\"background-color: red;\">".$out_file_format."</td>" . PHP_EOL;
                 echo"<td style=\"background-color: red;\">BAD (". $diff_output .")</td>" . PHP_EOL;
             }
@@ -197,29 +223,36 @@ function compare_script_outputs($src_files, $file_int, $file_parse, $arguments, 
                 echo"<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
             }
         }
+        //error wrong RC
         else{
             $fail_count += 1;
             echo "<td style=\"background-color: red;\">BAD</td>".PHP_EOL.
                  "<td style=\"background-color: red;\">".
-                 "got-(". $ret_value . ")  expected-(". $ref_ret_value .")".
-                 "</td>".PHP_EOL.
-                 "<td style=\"background-color: orange;\">BAD RC</td>" . PHP_EOL.
+                 "got-(". $ret_value . ")----------(". $ref_ret_value .")".
+                 "</td>".PHP_EOL;
+            if ($not_XML_flag == 0){
+                echo"<td style=\"background-color: red;\">XML</td>" . PHP_EOL;
+            }
+            else{
+                echo"<td style=\"background-color: red;\">".$in_file_format."</td>" . PHP_EOL;
+            }
+            echo "<td style=\"background-color: orange;\">BAD RC</td>" . PHP_EOL.
                  "<td style=\"background-color: orange;\">BAD RC</td>" . PHP_EOL.
                  "<td style=\"background-color: red;\">FAIL</td></tr>" . PHP_EOL;
         }
 
+        //remove tmp files
         shell_exec("rm ". $tmp_file);
-        if ($parse_ret_value == 0){
-            shell_exec("rm ". $tmp_file2);
-        }
         $index = $index + 1;
     }
     $test_count = $index - 1;
-    if($fail_count != 0){
+    //cal success rate
+    if($test_count != 0){
         $percento = $test_count / 100;
         $rate = $passed_count / $percento;
         $rate = round($rate);
     }
+    //end table
     echo "</table> " . PHP_EOL .
          "<div style=\"font-size: 20px;\">" . PHP_EOL .
          "<h3> TOTAL TESTS: ". $test_count ."</h3>" . PHP_EOL .
@@ -235,26 +268,48 @@ function compare_script_outputs($src_files, $file_int, $file_parse, $arguments, 
 
 #######FUNCTIONS#########
 
-$files = array();
+$src_files = array();
 $arguments = array();
 #$file_jexamxml = "/pub/courses/ipp/jexamxml/jexamxml.jar"
 #$file_options = "/pub/courses/ipp/jexamxml/options"
+#$file_int = "interpret.py";
+#$file_parse = "parser.php";
 $file_options = "/Users/marekziska/Desktop/IPP/projekt/jexamxml/options";
 $file_jexamxml = "/Users/marekziska/Desktop/IPP/projekt/jexamxml/jexamxml.jar";
-$file_int = "../interpreter/interpret.py";
-$file_parse = "../parser/parser.php";
+$file_int = "interpreter/interpret.py";
+$file_parse = "parser/parser.php";
 if($argc == 1){
     exit(1);
 }
 else{
     $i = 1;
+    //parses all arguments
     while($i < $argc){
         array_push($arguments, get_argument($argv[$i], $location_dir, $file_parse, $file_int, $file_jexamxml));
         $i++;
     }
+    //print hints
     if(in_array(Arguments::Help, $arguments)){
         if(count($arguments) == 1){
-            echo "napoveda";
+            echo "SUPPORTED ARGUMENTS
+                   --directory=path testybudehledatvzadanemadresari(chybi-litentoparametr,takskript"."
+                   prochazi aktualni adresar; v pripade zadani neexistujiciho adresare dojde k chybe 11);".PHP_EOL."
+                   --recursive testy bude hledat nejen v zadanem adresari, ale i rekurzivne ve vsech jeho"."
+                   podadresarich;".PHP_EOL."
+                   --parse-script=file soubor se skriptem v PHP 7.4 pro analyzu zdrojoveho kodu v IPP- code20 (chybi"."
+                   -li tento parametr, tak implicitni hodnotou je parse.php ulozeny v aktualnim adresari);".PHP_EOL."
+                   --int-script=file soubor se skriptem v Python 3.8 pro interpret XML reprezentace kodu v IPPcode20"."
+                   (chybi-li tento parametr, tak implicitni hodnotou je interpret.py ulozeny v ak- tualnim"."
+                   adresari);".PHP_EOL."
+                   --parse-only bude testovan pouze skript pro analyzu zdrojoveho kodu v IPPcode20 (tento parametr "."
+                   se nesmi kombinovat s parametry --int-only a --int-script), vystup s referencnim vystupem (soubor"."
+                   s priponou out) porovnavejte nastrojem A7Soft JExamXML (viz [2]);".PHP_EOL."
+                   --int-only bude testovan pouze skript pro interpret XML reprezentace kodu v IPPcode20 (tento"."
+                   parametr se nesmi kombinovat s parametry --parse-only a --parse-script). Vstupni program reprezen"."
+                   tovan pomoci XML bude v souboru s priponou src.".PHP_EOL."
+                   --jexamxml=file soubor s JAR balickem s nastrojem A7Soft JExamXML. Je-li parametr vynechan uvazuje"."
+                   se implicitni umisteni /pub/courses/ipp/jexamxml/jexamxml.jar na ser- veru Merlin, kde bude"."
+                   test.php hodnocen.".PHP_EOL;
             exit(0);
         }
         else{
@@ -266,12 +321,14 @@ else{
         $location_dir = getcwd();
     }
     if(in_array(Arguments::Recursive, $arguments)){
-            search_subdir($location_dir, $files, True);
-            $src_files = get_src_files($files, $arguments);
+            //search subdirs recursively
+            search_subdir($location_dir, $src_files, True);
+            sort($src_files);
     }
     else{
-            search_subdir($location_dir, $files, False);
-            $src_files = get_src_files($files, $arguments);
+            //search subdir
+            search_subdir($location_dir, $src_files, False);
+            sort($src_files);
     }
     if((in_array(Arguments::ParseOnly, $arguments) && in_array(Arguments::IntScript, $arguments)) ||
        (in_array(Arguments::ParseOnly, $arguments) && in_array(Arguments::IntOnly, $arguments)) ||
@@ -296,6 +353,7 @@ else{
          "<td style=\"width: 250px;\">filename</td>". PHP_EOL .
          "<td style=\"width: 300px\">.rc status</td>". PHP_EOL .
          "<td style=\"width: 300px\">rc - received vs expected</td>". PHP_EOL .
+         "<td style=\"width:300px\">.src content</td>". PHP_EOL .
          "<td style=\"width:300px\">.out content</td>". PHP_EOL .
          "<td style=\"width:300px\">.out status</td>". PHP_EOL .
          "<td style=\"width:120px\">RESULT</td></tr>" . PHP_EOL;

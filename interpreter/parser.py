@@ -72,7 +72,7 @@ class Parser:
                 raise XMLformatError("Error 32: The order attribute in instruction(order" + str(self.instr_count) +
                                      ") was not found! ")
             if "opcode" in instruct.attrib:
-                instruction_name = instruct.attrib.get("opcode")
+                instruction_name = instruct.attrib.get("opcode").upper()
                 # valid format of instruction element -> new instance of Instruction class
                 instruction = Instruction(instruction_name)
                 if not list(instruct):
