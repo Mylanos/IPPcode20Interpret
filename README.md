@@ -126,7 +126,7 @@ ladicí instrukce.
 ## Hodnotenie
 
 ### Interpret
-
+```
 Lexikální analýza: 90%
 Syntaktická analýza: 100%
 Sémantická analýza (detekce chyb): 95%
@@ -137,12 +137,13 @@ Rozšíření FLOAT 100%
 Rozšíření STACK 96%
 Rozšíření STATI 42%
 Celkem bez rozšíření: 95%
-
+```
 ### Parser
-
+```
 Lexikální analýza: 83%
 Syntaktická analýza: 100%
 Zpracování instrukcí: 98%
 Zpracování programů: 72%
 Rozšíření STATP 0%
 Celkem bez rozšíření: 88%
+```
