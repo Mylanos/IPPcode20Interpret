@@ -122,3 +122,27 @@ LABEL end
 Instrukční sada nabízí instrukce pro práci s proměnnými v rámcích, různé skoky, operace s da-
 tovým zásobníkem, aritmetické, logické a relační operace, dále také konverzní, vstupně/výstupní a
 ladicí instrukce.
+
+## Hodnotenie
+
+### Interpret
+
+Lexikální analýza: 90%
+Syntaktická analýza: 100%
+Sémantická analýza (detekce chyb): 95%
+Běhové chyby (detekce): 100%
+Interpretace instrukcí: 91%
+Interpretace programů: 100%
+Rozšíření FLOAT 100%
+Rozšíření STACK 96%
+Rozšíření STATI 42%
+Celkem bez rozšíření: 95%
+
+### Parser
+
+Lexikální analýza: 83%
+Syntaktická analýza: 100%
+Zpracování instrukcí: 98%
+Zpracování programů: 72%
+Rozšíření STATP 0%
+Celkem bez rozšíření: 88%
