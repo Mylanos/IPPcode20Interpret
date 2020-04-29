@@ -4,6 +4,7 @@
 ###Login: xziska03
 
 ##Interpret
+Interpret podporuje všetky rožšírenia.
 Pri implementácií interpretu som sa snažil o objektovo orientovaný prístup, z ktorého vyšli nasledovné moduly
 
 ###Hlavná trieda Interpret v __interpret.py__
@@ -34,6 +35,7 @@ Prevádza syntaktické kontroly argumentov a inštrukcií, ukladá si hondnoty a
 v reťazcoch.
 
 ###Trieda Stats v __stats.py__
+Hlavná časť rozšírenie STATI.
 Ukladá si počet vykonaných inštrukcií a maximálny počet definovaných premenných v čase behu programu v ktoromkoľvek
 rámci. Tlačí štatistiky na stdin.
 
